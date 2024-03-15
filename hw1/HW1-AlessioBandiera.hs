@@ -1,11 +1,21 @@
+import Data.List (sort)
+
 -- ### Esercizio 1.1
 myTakeWhile p [] = []
 myTakeWhile p (x:xs) = x : if p x then myTakeWhile p xs else []
 
-
--- ### Esercizio 1.2
 myDropWhile p [] = []
 myDropWhile p xs@(x:txs) = if p x then myDropWhile p txs else xs
+
+
+-- ### Esercizio 1.2
+myRemoveDupsOrd [x] = [x]
+myRemoveDupsOrd xs
+    | zipped == [] = []
+    | otherwise = fst zippedHead : snd zippedHead : map snd (tail zipped)
+    where sxs = sort xs
+          zipped = filter (uncurry $ \x y -> x /= y) (zip sxs (tail sxs))
+          zippedHead = head zipped
 
 
 -- ### Esercizio 1.3
@@ -20,17 +30,17 @@ myZipWith1 f xs ys = zapp (map f xs) ys
 
 
 -- ### Esercizio 2.2
-myZipWith2 f xs ys = map (\t -> f (fst t) (snd t)) (zip xs ys)
+myZipWith2 f xs ys = map (uncurry $ f) (zip xs ys)
 
 
 -- ### Esercizio 2.3
 myMap1 f = foldr ((:) . f) []
 
--- TODO: da fare
+myMap2 f = foldl (\acc x -> acc ++ [f x]) []
 
 
 -- ### Esercizio 2.4
--- TODO: è per il tipo ma non so giustificarlo a sufficienza
+-- TODO: da fare
 
 
 -- ### Esercizio 3.1
@@ -47,33 +57,40 @@ prefissi2 xs = prefissi2Internals [] xs
 
 
 -- ### Esercizio 3.2
-suffissi xs@(_:txs) = xs : suffissi txs
-suffissi [] = []
+-- suffissi xs@(_:txs) = xs : suffissi txs
+-- suffissi [] = []
 
-segSommaS [x] s = if x == s then [x] else []
-segSommaS xs@(_:txs) s = (filter (\l -> s == sum l) (prefissi2 xs)) : segSommaS txs s
+-- TODO: come dovrei usa suffissi?
+segSommaS [x] s = if x == s then [[x]] else []
+segSommaS xs@(_:txs) s = filter (\l -> s == sum l) (prefissi2 xs) ++ segSommaS txs s
 
 
 -- ### Esercizio 3.3
+-- TODO: da fare
 
 
+-- ### Esercizio 4.1
+-- TODO: da fare
 
--- ## Esercizio 
--- part1Internals n x y M = if y < x then 
---
--- part1 n = part1Internals n 0 1 [[0 | _ <- take n [0..]] | _ <- take n [0..]]
 
--- part1 0 0 = 1
--- part1 0 _ = 0
--- part1 j k = if j < k then prev else prev + part1 (j - 1) (k - j)
---     where prev = part1 (j - 1) k
-
--- part1
-
--- ## Esercizio 4.2
+-- ### Esercizio 4.2
 part2 n = if n <= 0 then 1 else sum (map (\x -> part2 (n - x)) [1..n])
+
+
+-- ### Esercizio 4.3
+partsInternals l n = if n <= 0 then [l] else concat [partsInternals (l ++ [x]) (n - x) | x <- [1..n]]
+
+parts n = myRemoveDupsOrd $ map sort (partsInternals [] n)
+
+
+-- ### Esercizio 4.4
+-- TODO: giustificare complessità
+part3 n = length $ parts n
+
 
 main :: IO ()
 -- main = do putStrLn $ show $ segSommaS [4, 2, 3, 4] 9
--- main = do putStrLn $ show $ part2 4
-main = do putStrLn $ show $ myZipWith2 (+) [1, 2, 3] [4, 5, 6]
+main = do putStrLn $ show $ part3 4
+-- main = do putStrLn $ show $ myMap2 (+3) [1, 2, 3]
+-- main = do putStrLn $ show $ myRemoveDupsOrd [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
+-- main = do putStrLn $ show $ myRemoveDupsOrd [2, 1, 1, 1, 1]
