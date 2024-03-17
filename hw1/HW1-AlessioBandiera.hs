@@ -67,8 +67,9 @@ segSommaS xs@(_:txs) s = filter (\l -> s == sum l) (prefissi2 xs) ++ segSommaS t
 -- O(n^3)
 partInternals 0 _ _ = 1
 partInternals n j k
+    | j == k = 1
     | j < k = 0
-    | j >= k = if j == k then 1 else 0 + sum [partInternals n (j - k) i | i <- [k..n]]
+    | j > k = sum [partInternals n (j - k) i | i <- [k..n]]
 
 part n = partInternals n (n + 1) 1
 
@@ -96,4 +97,4 @@ main :: IO ()
 -- main = do putStrLn $ show $ part2 3
 -- main = do putStrLn $ show $ myMap2 (+3) [1, 2, 3]
 -- main = do putStrLn $ show $ myRemoveDupsOrd $ sort [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
-main = do putStrLn $ show $ parts 1
+main = do putStrLn $ show $ part 16
