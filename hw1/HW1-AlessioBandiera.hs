@@ -86,7 +86,8 @@ part n = partInternals n (n + 1) 1
 
 -- ### Esercizio 4.2
 -- O(2^n)
-part2 n = if n <= 0 then 1 else sum [part2 (n - x) | x <- [1..n]]
+part2 0 = 1
+part2 n = sum [part2 (n - x) | x <- [1..n]]
 
 
 -- ### Esercizio 4.3
@@ -105,9 +106,9 @@ part2 n = if n <= 0 then 1 else sum [part2 (n - x) | x <- [1..n]]
 
 
 main :: IO ()
--- main = do putStrLn $ show $ sublSommaS [1, 2, 1, 2, 5, 3, 2, 4] 4
-main = do putStrLn $ show $ segSommaS [4, 2, 3, 4] 9
--- main = do putStrLn $ show $ part2 3
+main = do putStrLn $ show $ sublSommaS [1, 2, 1, 2, 5, 3, 2, 4] 4
+-- main = do putStrLn $ show $ segSommaS [4, 2, 3, 4] 9
+-- main = do putStrLn $ show $ part2 1
 -- main = do putStrLn $ show $ myMap2 (+3) [1, 2, 3]
 -- main = do putStrLn $ show $ myRemoveDupsOrd $ sort [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
 -- main = do putStrLn $ show $ parts [1, 1, 1, 1]
