@@ -38,29 +38,39 @@ myMap2 f = foldl (\acc x -> acc ++ [f x]) []
 
 
 -- ### Esercizio 2.4
--- TODO: da fare
+-- Non è possibile definire foldl/foldr utilizzando map in quanto
+-- il tipo della funzione che map prende in input è a -> b, mentre
+-- il tipo della funzione che foldl e foldr si aspettano in input
+-- sono rispettivamente b -> a -> b e a -> b -> b, che sono molto
+-- più generali (poiché devono permettere di gestire un accumulatore,
+-- cosa di cui invece map non dispone)
 
 
 -- ### Esercizio 3.1
--- O(n^3)
-prefissi1 [] = []
-prefissi1 xs = (prefissi1 $ reverse $ tail $ reverse xs) ++ [xs]
-
 -- O(n^2)
-prefissi2Internals _ [] = []
-prefissi2Internals ps (x:xs) = pref : prefissi2Internals pref xs
+prefissiInternals _ [] = []
+prefissiInternals ps (x:xs) = pref : prefissiInternals pref xs
     where pref = ps ++ [x]
 
-prefissi2 xs = prefissi2Internals [] xs
+prefissi xs = prefissiInternals [] xs
 
 
 -- ### Esercizio 3.2
+suffissi xs@(_:txs) = xs : suffissi txs
+suffissi [] = []
+
+-- TODO: forse rifallo?
 segSommaS [x] s = if x == s then [[x]] else []
-segSommaS xs@(_:txs) s = filter (\l -> s == sum l) (prefissi2 xs) ++ segSommaS txs s
+segSommaS xs@(_:txs) s = filter (\l -> s == sum l) (prefissi xs) ++ segSommaS txs s
 
 
 -- ### Esercizio 3.3
--- TODO: da fare
+-- O(2^n)
+sublSommaSInternals [x] = [[x]]
+sublSommaSInternals (x:xs) = [[x]] ++ [[x] ++ r | r <- rest] ++ rest
+    where rest = sublSommaSInternals(xs)
+
+sublSommaS l n = filter (\x -> sum x == n) (sublSommaSInternals l)
 
 
 -- ### Esercizio 4.1
@@ -81,20 +91,23 @@ part2 n = if n <= 0 then 1 else sum [part2 (n - x) | x <- [1..n]]
 
 -- ### Esercizio 4.3
 -- O(2^n)
--- TODO FILTRALE
-partsInternals l n = if n <= 0 then [l] else concat [partsInternals (l ++ [x]) (n - x) | x <- [1..n]]
-
-parts n = partsInternals [] n
+-- TODO: RIFALLO
+-- partsInternals l n = if n <= 0 then [l] else concat [partsInternals (l ++ [x]) (n - x) | x <- [1..n]]
+--
+-- parts n = partsInternals [] n
+-- parts [x] = [x]
+-- parts (x:y:xs) = 
 
 
 -- ### Esercizio 4.4
 -- TODO: giustificare complessità
-part3 n = length $ parts n
+-- part3 n = length $ parts n
 
 
 main :: IO ()
--- main = do putStrLn $ show $ segSommaS [4, 2, 3, 4] 9
+-- main = do putStrLn $ show $ sublSommaS [1, 2, 1, 2, 5, 3, 2, 4] 4
+main = do putStrLn $ show $ segSommaS [4, 2, 3, 4] 9
 -- main = do putStrLn $ show $ part2 3
 -- main = do putStrLn $ show $ myMap2 (+3) [1, 2, 3]
 -- main = do putStrLn $ show $ myRemoveDupsOrd $ sort [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
-main = do putStrLn $ show $ part 16
+-- main = do putStrLn $ show $ parts [1, 1, 1, 1]
