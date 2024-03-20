@@ -14,26 +14,18 @@ myRemoveDupsOrd [x] = [x]
 myRemoveDupsOrd xs
     | zxs == [] = []
     | otherwise = fst zh : snd zh : map snd (tail zxs)
-    where zxs = filter (uncurry $ \x y -> x /= y) (zip xs (tail xs))
+    where zxs = filter (uncurry $ \x y -> x /= y) (zip xs $ tail xs)
           zh = head zxs
 
 
 -- ### Esercizio 1.3
--- O(n)
-filterTuples is@(i:tis) (x:xs)
-    | snd x == i = x : filterTuples tis xs
-    | otherwise = filterTuples is xs
-filterTuples _ _ = []
-
 -- O(n)
 filterdups [] = []
 filterDups [x, y] = if fst x /= fst y then [x, y] else [y]
 filterDups (x:y:xs) = if fst x /= fst y then x : filterDups (y:xs) else filterDups (y:xs)
 
 -- O(n log n)
-myRemoveDups xs = map (\x -> fst x) (filterTuples idxs exs)
-    where exs = zip xs [0..]
-          idxs = sort $ map (\x -> snd x) (filterDups $ reverse $ sort $ exs)
+myRemoveDups xs = map snd $ sort $ map (\(x, y) -> (y, x)) (filterDups . reverse . sort $ zip xs [0..])
 
 
 -- ### Esercizio 2.1
@@ -59,7 +51,7 @@ myMap2 f = foldl (\acc x -> acc ++ [f x]) []
 -- il tipo della funzione che foldl e foldr si aspettano in input
 -- sono rispettivamente b -> a -> b e a -> b -> b, che sono molto
 -- più generali (poiché devono permettere di gestire un accumulatore,
--- cosa di cui invece map non dispone)
+-- cosa di cui invece map non dispone).
 
 
 -- ### Esercizio 3.1
@@ -75,22 +67,21 @@ prefissi xs = prefissi' [] xs
 suffissi xs@(_:txs) = xs : suffissi txs
 suffissi [] = []
 
--- TODO: forse rifallo?
-segSommaS [x] s = if x == s then [[x]] else []
-segSommaS xs@(_:txs) s = filter (\l -> s == sum l) (prefissi xs) ++ segSommaS txs s
+segSommaS xs n = filter (\ys -> sum ys == n) (concat $ map suffissi $ prefissi xs)
 
 
 -- ### Esercizio 3.3
 -- O(2^n)
+sublSommaS' [] = [[]]
 sublSommaS' [x] = [[x]]
 sublSommaS' (x:xs) = [[x]] ++ [[x] ++ r | r <- rest] ++ rest
-    where rest = sublSommaS'(xs)
+    where rest = sublSommaS' xs
 
-sublSommaS l n = filter (\x -> sum x == n) (sublSommaS' l)
+sublSommaS l n = filter (\ys -> sum ys == n) (sublSommaS' l)
 
 
 -- ### Esercizio 4.1
--- O(n^3) TODO: MISA CHE È SBAGLIATO, CONSIDERA DI RIFARLO COME IERI SERA
+-- O(2^n)
 part' 0 _ _ = 1
 part' n j k
     | j == k = 1
@@ -108,24 +99,24 @@ part2 n = sum [part2 (n - x) | x <- [1..n]]
 
 -- ### Esercizio 4.3
 -- O(2^n)
--- TODO: RIFALLO
--- parts' l n = if n <= 0 then [l] else concat [parts' (l ++ [x]) (n - x) | x <- [1..n]]
---
--- parts n = parts' [] n
--- parts [x] = [x]
--- parts (x:y:xs) = 
+parts 0 = [[]]
+parts 1 = [[1]]
+parts n = [x : y | x <- [1..n], y <- parts (n - x), null y || head y <= x]
 
 
 -- ### Esercizio 4.4
--- TODO: giustificare complessità
--- part3 n = length $ parts n
+-- Il costo computazionale è sempre O(2^n) nonostante la valutazione lazy,
+-- in quanto length deve comunque arrivare ai casi base, e anche se non
+-- è necessario creare le liste, serve comunque sapere quanti elementi
+-- queste devono contenere.
+part3 n = length $ parts n
 
 
 main :: IO ()
--- main = do putStrLn $ show $ sublSommaS [1, 2, 1, 2, 5, 3, 2, 4] 4
-main = do putStrLn $ show $ myRemoveDups [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
--- main = do putStrLn $ show $ segSommaS [4, 2, 3, 4] 9
+main = do putStrLn $ show $ segSommaS [1, 2, 1, 2, 5, 3, 2, 4] 4
+-- main = do putStrLn $ show $ myRemoveDups [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
+-- main = do putStrLn $ show $ sublSommaS [] 1
 -- main = do putStrLn $ show $ part2 1
 -- main = do putStrLn $ show $ myMap2 (+3) [1, 2, 3]
 -- main = do putStrLn $ show $ myRemoveDupsOrd $ sort [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
--- main = do putStrLn $ show $ parts [1, 1, 1, 1]
+-- main = do putStrLn $ show $ parts 4
