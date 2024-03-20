@@ -12,24 +12,28 @@ myDropWhile p xs@(x:txs) = if p x then myDropWhile p txs else xs
 -- O(n)
 myRemoveDupsOrd [x] = [x]
 myRemoveDupsOrd xs
-    | zipped == [] = []
-    | otherwise = fst zippedHead : snd zippedHead : map snd (tail zipped)
-    where zipped = filter (uncurry $ \x y -> x /= y) (zip xs (tail xs))
-          zippedHead = head zipped
+    | zxs == [] = []
+    | otherwise = fst zh : snd zh : map snd (tail zxs)
+    where zxs = filter (uncurry $ \x y -> x /= y) (zip xs (tail xs))
+          zh = head zxs
 
 
 -- ### Esercizio 1.3
-enumerateRev' _ [] = []
-enumerateRev' n [x] = [(x, n)]
-enumerateRev' n (x:xs) = (x, n) : enumerateRev' (n + 1) xs
+-- O(n)
+filterTuples is@(i:tis) (x:xs)
+    | snd x == i = x : filterTuples tis xs
+    | otherwise = filterTuples is xs
+filterTuples _ _ = []
 
-enumerateRev xs = enumerateRev' 0 xs
+-- O(n)
+filterdups [] = []
+filterDups [x, y] = if fst x /= fst y then [x, y] else [y]
+filterDups (x:y:xs) = if fst x /= fst y then x : filterDups (y:xs) else filterDups (y:xs)
 
-myRemoveDups l = map (\x -> snd x) (fst zippedHead : snd zippedHead : map snd (tail zipped))
-    where exs = enumerate Rev l
-          sxs = sort $ exs
-          zipped = filter (uncurry $ \x y -> fst x /= fst y) (zip sxs (tail sxs))
-          zippedHead = head zipped
+-- O(n log n)
+myRemoveDups xs = map (\x -> fst x) (filterTuples idxs exs)
+    where exs = zip xs [0..]
+          idxs = sort $ map (\x -> snd x) (filterDups $ reverse $ sort $ exs)
 
 
 -- ### Esercizio 2.1
