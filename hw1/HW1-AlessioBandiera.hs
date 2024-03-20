@@ -17,7 +17,14 @@ myRemoveDupsOrd xs
 
 
 -- ### Esercizio 1.3
--- TODO: da fare
+enumerate' _ [] = []
+enumerate' n [x] = [(n, x)]
+enumerate' n (x:xs) = (n, x) : enumerate' (n + 1) xs
+
+enumerate xs = enumerate' 0 xs
+
+
+-- myRemoveDups l = 
 
 
 -- ### Esercizio 2.1
@@ -48,11 +55,11 @@ myMap2 f = foldl (\acc x -> acc ++ [f x]) []
 
 -- ### Esercizio 3.1
 -- O(n^2)
-prefissiInternals _ [] = []
-prefissiInternals ps (x:xs) = pref : prefissiInternals pref xs
+prefissi' _ [] = []
+prefissi' ps (x:xs) = pref : prefissi' pref xs
     where pref = ps ++ [x]
 
-prefissi xs = prefissiInternals [] xs
+prefissi xs = prefissi' [] xs
 
 
 -- ### Esercizio 3.2
@@ -66,22 +73,22 @@ segSommaS xs@(_:txs) s = filter (\l -> s == sum l) (prefissi xs) ++ segSommaS tx
 
 -- ### Esercizio 3.3
 -- O(2^n)
-sublSommaSInternals [x] = [[x]]
-sublSommaSInternals (x:xs) = [[x]] ++ [[x] ++ r | r <- rest] ++ rest
-    where rest = sublSommaSInternals(xs)
+sublSommaS' [x] = [[x]]
+sublSommaS' (x:xs) = [[x]] ++ [[x] ++ r | r <- rest] ++ rest
+    where rest = sublSommaS'(xs)
 
-sublSommaS l n = filter (\x -> sum x == n) (sublSommaSInternals l)
+sublSommaS l n = filter (\x -> sum x == n) (sublSommaS' l)
 
 
 -- ### Esercizio 4.1
--- O(n^3)
-partInternals 0 _ _ = 1
-partInternals n j k
+-- O(n^3) TODO: MISA CHE È SBAGLIATO, CONSIDERA DI RIFARLO COME IERI SERA
+part' 0 _ _ = 1
+part' n j k
     | j == k = 1
     | j < k = 0
-    | j > k = sum [partInternals n (j - k) i | i <- [k..n]]
+    | j > k = sum [part' n (j - k) i | i <- [k..n]]
 
-part n = partInternals n (n + 1) 1
+part n = part' n (n + 1) 1
 
 
 -- ### Esercizio 4.2
@@ -93,9 +100,9 @@ part2 n = sum [part2 (n - x) | x <- [1..n]]
 -- ### Esercizio 4.3
 -- O(2^n)
 -- TODO: RIFALLO
--- partsInternals l n = if n <= 0 then [l] else concat [partsInternals (l ++ [x]) (n - x) | x <- [1..n]]
+-- parts' l n = if n <= 0 then [l] else concat [parts' (l ++ [x]) (n - x) | x <- [1..n]]
 --
--- parts n = partsInternals [] n
+-- parts n = parts' [] n
 -- parts [x] = [x]
 -- parts (x:y:xs) = 
 
@@ -106,7 +113,8 @@ part2 n = sum [part2 (n - x) | x <- [1..n]]
 
 
 main :: IO ()
-main = do putStrLn $ show $ sublSommaS [1, 2, 1, 2, 5, 3, 2, 4] 4
+-- main = do putStrLn $ show $ sublSommaS [1, 2, 1, 2, 5, 3, 2, 4] 4
+main = do putStrLn $ show $ enumerate [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
 -- main = do putStrLn $ show $ segSommaS [4, 2, 3, 4] 9
 -- main = do putStrLn $ show $ part2 1
 -- main = do putStrLn $ show $ myMap2 (+3) [1, 2, 3]
