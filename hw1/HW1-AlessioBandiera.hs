@@ -1,3 +1,5 @@
+import Data.List (sort)
+
 -- ### Esercizio 1.1
 myTakeWhile p [] = []
 myTakeWhile p (x:xs) = x : if p x then myTakeWhile p xs else []
@@ -17,14 +19,17 @@ myRemoveDupsOrd xs
 
 
 -- ### Esercizio 1.3
-enumerate' _ [] = []
-enumerate' n [x] = [(n, x)]
-enumerate' n (x:xs) = (n, x) : enumerate' (n + 1) xs
+enumerateRev' _ [] = []
+enumerateRev' n [x] = [(x, n)]
+enumerateRev' n (x:xs) = (x, n) : enumerateRev' (n + 1) xs
 
-enumerate xs = enumerate' 0 xs
+enumerateRev xs = enumerateRev' 0 xs
 
-
--- myRemoveDups l = 
+myRemoveDups l = map (\x -> snd x) (fst zippedHead : snd zippedHead : map snd (tail zipped))
+    where exs = enumerate Rev l
+          sxs = sort $ exs
+          zipped = filter (uncurry $ \x y -> fst x /= fst y) (zip sxs (tail sxs))
+          zippedHead = head zipped
 
 
 -- ### Esercizio 2.1
@@ -114,7 +119,7 @@ part2 n = sum [part2 (n - x) | x <- [1..n]]
 
 main :: IO ()
 -- main = do putStrLn $ show $ sublSommaS [1, 2, 1, 2, 5, 3, 2, 4] 4
-main = do putStrLn $ show $ enumerate [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
+main = do putStrLn $ show $ myRemoveDups [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
 -- main = do putStrLn $ show $ segSommaS [4, 2, 3, 4] 9
 -- main = do putStrLn $ show $ part2 1
 -- main = do putStrLn $ show $ myMap2 (+3) [1, 2, 3]
