@@ -8,4 +8,3 @@ Questi sono i miei homework del corso di **Tecniche di Programmazione Funzionale
 - [HW4](hw4/HW4-AlessioBandiera.hs) 
 - [HW5](hw5/HW5-AlessioBandiera.hs) 
 - [HW6](hw6/HW6-AlessioBandiera.hs) 
-
