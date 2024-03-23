@@ -82,14 +82,10 @@ sublSommaS l n = filter (\ys -> sum ys == n) (sublSommaS' l)
 
 -- ### Esercizio 4.1
 -- O(2^n)
-part' 0 _ _ = 1
-part' n j k
-    | j == k = 1
-    | j < k = 0
-    | j > k = sum [part' n (j - k) i | i <- [k..n]]
+part' 0 _ = 1
+part' n prev = sum [part' (n - x) x | x <- [1..n], x <= prev]
 
-part n = part' n (n + 1) 1
-
+part n = part' n n
 
 -- ### Esercizio 4.2
 -- O(2^n)
@@ -110,13 +106,3 @@ parts n = [x : y | x <- [1..n], y <- parts (n - x), null y || head y <= x]
 -- è necessario creare le liste, serve comunque sapere quanti elementi
 -- queste devono contenere.
 part3 n = length $ parts n
-
-
-main :: IO ()
-main = do putStrLn $ show $ segSommaS [1, 2, 1, 2, 5, 3, 2, 4] 4
--- main = do putStrLn $ show $ myRemoveDups [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
--- main = do putStrLn $ show $ sublSommaS [] 1
--- main = do putStrLn $ show $ part2 1
--- main = do putStrLn $ show $ myMap2 (+3) [1, 2, 3]
--- main = do putStrLn $ show $ myRemoveDupsOrd $ sort [5, 2, 1, 2, 5, 7, 2, 1, 2, 7]
--- main = do putStrLn $ show $ parts 4
