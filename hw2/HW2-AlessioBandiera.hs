@@ -1,10 +1,26 @@
 --- ### Esercizio 1.1
-
-merge xs ys = map (\(x, y) -> if x > y then y else x) (zip xs ys)
+merge (x:xs) (y:ys) = if x < y then x : merge xs (y:ys) else y : merge (x:xs) ys
+merge xs [] = xs
+merge [] ys = ys
 
 couple [] = []
 couple [[x]] = [[x]]
+couple [x] = [x]
 couple (xs:ys:xss) = merge xs ys : couple xss
+
+isSingleton [x] = False
+isSingleton _ = True
+
+skipWhile _ [] = []
+skipWhile p (x:xs) = if p x then skipWhile p xs else x
+
+-- TODO: non capisco perché con la lista vuota non funziona
+mergeSort xs = head $ skipWhile isSingleton (iterate couple (map (\x -> [x]) xs))
+
+
+--- ### Esercizio 2.2
+--- TODO: da fare
+
 
 --- ### Esercizio 2.1
 data BinTree a = Node a (BinTree a) (BinTree a) | Empty
@@ -30,7 +46,8 @@ foldrBT' f acc (Node' sx dx) = f (foldrBT' f acc sx) (foldrBT' f acc dx)
 nodes b = foldrBT (\acc sx dx -> acc + 1) 0 b
 
 main :: IO ()
-main = do putStrLn $ show $ mergeSort [5, 3, 4, 2, 1]
+main = do putStrLn $ show $ mergeSort [5, 3, 4, 2, 1, 6, 8, 7, 0]
+-- main = do putStrLn $ show $ mergeSort [1, 2]
 -- main = do putStrLn $ show $ mapBT (+3) (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ mapBT' (+3) (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ foldrBT (\acc sx dx -> acc + sx + dx) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
