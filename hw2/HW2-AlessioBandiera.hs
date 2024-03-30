@@ -8,17 +8,17 @@ couple [[x]] = [[x]]
 couple [x] = [x]
 couple (xs:ys:xss) = merge xs ys : couple xss
 
-isSingleton [x] = False
-isSingleton _ = True
+isNotSingleton [x] = False
+isNotSingleton _ = True
 
 skipWhile _ [] = []
 skipWhile p (x:xs) = if p x then skipWhile p xs else x
 
 -- TODO: non capisco perché con la lista vuota non funziona
-mergeSort xs = head $ skipWhile isSingleton (iterate couple (map (\x -> [x]) xs))
+mergeSort xs = head $ skipWhile isNotSingleton (iterate couple (map (\x -> [x]) xs))
 
 
--- ### Esercizio 2.2
+-- ### Esercizio 1.2
 -- TODO: da fare
 
 
@@ -47,13 +47,20 @@ foldlBT' f acc (Leaf a) = f a acc
 foldlBT' f acc (Node' sx dx) = foldlBT' f (foldlBT' f acc sx) dx
 
 
--- ### Esercizio 2.2
+-- ### Esercizio 2.2.a
 nodesBT b = foldrBT (\a sx dx -> 1 + sx + dx) 0 b
 
+-- nodesBT' b = foldrBT' (\sx dx -> ) 0 b
+
+
+-- ### Esercizio 2.2.b
 heightBT b = foldrBT (\a sx dx -> 1 + max sx dx) (-1) b
 
-maxDisplacementBT b = abs (fst fb - snd fb)
+
+-- ### Esercizio 2.2.c
+maxUnbalBT b = abs (fst fb - snd fb)
     where fb = foldrBT (\a (hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (-1,-1) b
+
 
 -- ### Esercizio 3
 -- T(n) = T(k) + T(n - k - 1) + O(n)
@@ -77,7 +84,8 @@ main :: IO ()
 -- main = do putStrLn $ show $ foldlBT (+) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ foldlBT' (+) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ nodesBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
+main = do putStrLn $ show $ nodesBT' (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ heightBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
--- main = do putStrLn $ show $ maxDisplacementBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
-main = do putStrLn $ show $ maxDisplacementBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty)))Empty)))
+-- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
+-- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty)))Empty)))
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
