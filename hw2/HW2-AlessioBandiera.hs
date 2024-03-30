@@ -37,33 +37,41 @@ mapBT' f (Node' sx dx) = Node' (mapBT' f sx) (mapBT' f dx)
 foldrBT f acc Empty = acc
 foldrBT f acc (Node a sx dx) = f a (foldrBT f acc sx) (foldrBT f acc dx)
 
-foldrBT' f acc (Leaf a) = f a acc
-foldrBT' f acc (Node' sx dx) = f (foldrBT' f acc sx) (foldrBT' f acc dx)
+foldrBT' fNodes fLeaves acc (Leaf a) = fLeaves a acc
+foldrBT' fNodes fLeaves acc (Node' sx dx) = fNodes (foldrBT' fNodes fLeaves acc sx) (foldrBT' fNodes fLeaves acc dx)
 
+-- TODO: da rifare
 foldlBT f acc Empty = acc
 foldlBT f acc (Node a sx dx) = foldlBT f (foldlBT f (f acc a) sx) dx
 
-foldlBT' f acc (Leaf a) = f a acc
-foldlBT' f acc (Node' sx dx) = foldlBT' f (foldlBT' f acc sx) dx
+-- TODO: da rifare
+foldlBT' fNodes fLeaves acc (Leaf a) = fLeaves a acc
+foldlBT' fNodes fLeaves acc (Node' sx dx) = foldlBT' fNodes fLeaves (foldlBT' fNodes fLeaves acc sx) dx
 
 
 -- ### Esercizio 2.2.a
 nodesBT b = foldrBT (\a sx dx -> 1 + sx + dx) 0 b
 
--- nodesBT' b = foldrBT' (\sx dx -> ) 0 b
+nodesBT' b = foldrBT' (\sx dx -> sx + dx + 1) (\a acc -> acc) 1 b
 
 
 -- ### Esercizio 2.2.b
 heightBT b = foldrBT (\a sx dx -> 1 + max sx dx) (-1) b
+
+heightBT' b = foldrBT' (\sx dx -> 1 + max sx dx) (\a acc -> acc) 0 b
 
 
 -- ### Esercizio 2.2.c
 maxUnbalBT b = abs (fst fb - snd fb)
     where fb = foldrBT (\a (hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (-1,-1) b
 
+maxUnbalBT' b = abs (fst fb - snd fb)
+    where fb = foldrBT' (\(hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (\a acc -> acc) (0, 0) b
+
 
 -- ### Esercizio 3
 -- T(n) = T(k) + T(n - k - 1) + O(n)
+-- dunque il costo dell'algoritmo è O(n log n)
 balancedNodesAux n Empty = ([], 0)
 balancedNodesAux n (Node a sx dx) = if n == totalSum then (a : totalNodes, totalSum) else (totalNodes, totalSum)
     where (sxNodes, sxSum) = balancedNodesAux (n + a) sx
@@ -76,16 +84,16 @@ balancedNodes b = fst (balancedNodesAux 0 b)
 
 main :: IO ()
 -- main = do putStrLn $ show $ mergeSort [5, 3, 4, 2, 1, 6, 8, 7, 0]
--- main = do putStrLn $ show $ mergeSort [1, 2]
 -- main = do putStrLn $ show $ mapBT (+3) (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ mapBT' (+3) (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ foldrBT (\acc sx dx -> acc + sx + dx) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
--- main = do putStrLn $ show $ foldrBT' (+) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
+-- main = do putStrLn $ show $ foldrBT' (\acc sx dx -> acc + sx + dx) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ foldlBT (+) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
--- main = do putStrLn $ show $ foldlBT' (+) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
+-- main = do putStrLn $ show $ foldlBT' (\sx dx -> sx) (\a acc -> acc + 1) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ nodesBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
-main = do putStrLn $ show $ nodesBT' (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
+-- main = do putStrLn $ show $ nodesBT' (Node' (Node' (Leaf 10) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ heightBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
--- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
--- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty)))Empty)))
+-- main = do putStrLn $ show $ heightBT' (Node' (Node' (Leaf 10) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
+-- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty))) Empty)))
+main = do putStrLn $ show $ maxUnbalBT' (Node' (Node' (Node' (Leaf 1) (Leaf 2)) (Leaf 3)) (Node' (Node' (Leaf 4) (Leaf 5)) (Node' (Node' (Leaf 6) (Node' (Leaf 7) (Node' (Leaf 8) (Leaf 9)))) (Leaf 10))))
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
