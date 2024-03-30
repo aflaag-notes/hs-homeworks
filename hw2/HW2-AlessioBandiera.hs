@@ -37,6 +37,23 @@ mapBT' f (Node' sx dx) = Node' (mapBT' f sx) (mapBT' f dx)
 foldrBT f acc Empty = acc
 foldrBT f acc (Node a sx dx) = f a (foldrBT f acc sx) (foldrBT f acc dx)
 
+-- le funzioni fNodes ed fLeaves devono essere separate
+-- poiché se la funzione da passare a foldrBT' fosse 1 sola
+-- (dunque sia per il caso base che per il caso ricorsivo)
+-- questa potrebbe forzare `a` ed `acc` ad avere lo stesso tipo:
+-- assumendo che fNodes ed fLeaves siano una sola funzione f,
+-- poiché:
+--     - è desiderabile che la funzione da applicare all'albero possa
+--       interagire sia con `a` che con l'accumulatore del foldrBT';
+--     - sono le foglie ad avere le informazioni degli alberi
+--       di tipo BinTree' (e dunque a contenere i valori `a`),
+--     - nel caso ricorsivo gli argomenti di f possono limitarsi ad essere
+--       `acc` oppure un risultato di una chiamata ricorsiva, che deve
+--       necessariamente avere comunque lo stesso tipo di `acc`
+-- allora, se uno degli argomenti della chiamata di f nel caso ricorsivo
+-- è `a`, tale argomento viene forzato ad essere dello stesso tipo
+-- di `acc` dalla chiamata di f nel caso ricorsivo; questo comportamento
+-- limita la possibilità di effettuare foldrBT'
 foldrBT' fNodes fLeaves acc (Leaf a) = fLeaves a acc
 foldrBT' fNodes fLeaves acc (Node' sx dx) = fNodes (foldrBT' fNodes fLeaves acc sx) (foldrBT' fNodes fLeaves acc dx)
 
