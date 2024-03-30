@@ -48,9 +48,12 @@ foldlBT' f acc (Node' sx dx) = foldlBT' f (foldlBT' f acc sx) dx
 
 
 -- ### Esercizio 2.2
--- TODO: È SBAGLIATA
-nodes b = foldrBT (\acc sx dx -> acc + 1) 0 b
+nodesBT b = foldrBT (\a sx dx -> 1 + sx + dx) 0 b
 
+heightBT b = foldrBT (\a sx dx -> 1 + max sx dx) (-1) b
+
+maxDisplacementBT b = abs (fst fb - snd fb)
+    where fb = foldrBT (\a (hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (-1,-1) b
 
 -- ### Esercizio 3
 -- T(n) = T(k) + T(n - k - 1) + O(n)
@@ -72,6 +75,9 @@ main :: IO ()
 -- main = do putStrLn $ show $ foldrBT (\acc sx dx -> acc + sx + dx) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ foldrBT' (+) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ foldlBT (+) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
-main = do putStrLn $ show $ foldlBT' (+) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
--- main = do putStrLn $ show $ nodes (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
+-- main = do putStrLn $ show $ foldlBT' (+) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
+-- main = do putStrLn $ show $ nodesBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
+-- main = do putStrLn $ show $ heightBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
+-- main = do putStrLn $ show $ maxDisplacementBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
+main = do putStrLn $ show $ maxDisplacementBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty)))Empty)))
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
