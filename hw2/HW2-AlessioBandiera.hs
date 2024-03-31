@@ -148,7 +148,7 @@ listToABR = listToABRAux . orderedDedup . sort
 --     head (f x : map f xs) = {def di map}
 --     f x = {def di head}
 --     f (head (x:xs)) = {def di head}
---     (f . head) (x:xs) = {def di .}
+--     (f . head) (x:xs) {def di .}
 --
 --
 -- lemma 2:
@@ -163,7 +163,7 @@ listToABR = listToABRAux . orderedDedup . sort
 --      head ([foldr f e []]) = {def di map}
 --      head ([e]) = {def foldr}
 --      e = {def di head}
---      foldr f e = {def di foldr}
+--      foldr f e {def di foldr}
 --
 -- caso (x:xs)
 --      head . scanr f e (x:xs) =
@@ -173,7 +173,7 @@ listToABR = listToABRAux . orderedDedup . sort
 --      (head . map (foldr f e)) ((x:xs) : tails xs) = {def di .}
 --      ((foldr f e) . head) ((x:xs) : tails xs) = {lemma 1}
 --      foldr f e (head ((x:xs) : tails xs)) = {def di .}
---      foldr f e (x:xs) = {def di head}
+--      foldr f e (x:xs) {def di head}
 --
 --
 -- derivazione di scanr lineare:
