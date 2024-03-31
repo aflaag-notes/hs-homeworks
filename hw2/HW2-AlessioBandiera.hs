@@ -1,3 +1,5 @@
+import Data.List (sort)
+
 -- ### Esercizio 1.1
 merge (x:xs) (y:ys) = if x < y then x : merge xs (y:ys) else y : merge (x:xs) ys
 merge xs [] = xs
@@ -14,7 +16,7 @@ isNotSingleton _ = True
 skipWhile _ [] = []
 skipWhile p (x:xs) = if p x then skipWhile p xs else x
 
--- TODO: non capisco perché con la lista vuota non funziona
+-- TODO: lista vuota
 mergeSort xs = head $ skipWhile isNotSingleton (iterate couple (map (\x -> [x]) xs))
 
 
@@ -99,6 +101,28 @@ balancedNodesAux n (Node a sx dx) = if n == totalSum then (a : totalNodes, total
 balancedNodes b = fst (balancedNodesAux 0 b)
 
 
+-- ### Esercizio 4
+-- O(n)
+orderedDedup [x] = [x]
+orderedDedup xs
+    | zxs == [] = []
+    | otherwise = fst zh : snd zh : map snd (tail zxs)
+    where zxs = filter (\(x, y) -> x /= y) (zip xs $ tail xs)
+          zh = head zxs
+
+-- TODO: lista vuota
+-- 2T(n/2) + O(n) => T(n) = O(n log n)
+listToABRAux [] = Empty
+listToABRAux [x] = Node x Empty Empty
+listToABRAux xs = Node root (listToABRAux left) (listToABRAux right)
+    where (left, rootedRight) = splitAt (length xs `div` 2) xs
+          root = head rootedRight
+          right = tail rootedRight
+
+-- O(n log n) + O(n) + O(n log n) = O(n log n)
+listToABR = listToABRAux . orderedDedup . sort
+
+
 main :: IO ()
 -- main = do putStrLn $ show $ mergeSort [5, 3, 4, 2, 1, 6, 8, 7, 0]
 -- main = do putStrLn $ show $ mapBT (+3) (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
@@ -112,5 +136,6 @@ main :: IO ()
 -- main = do putStrLn $ show $ heightBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ heightBT' (Node' (Node' (Leaf 10) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty))) Empty)))
-main = do putStrLn $ show $ maxUnbalBT' (Node' (Node' (Node' (Leaf 1) (Leaf 2)) (Leaf 3)) (Node' (Node' (Leaf 4) (Leaf 5)) (Node' (Node' (Leaf 6) (Node' (Leaf 7) (Node' (Leaf 8) (Leaf 9)))) (Leaf 10))))
+-- main = do putStrLn $ show $ maxUnbalBT' (Node' (Node' (Node' (Leaf 1) (Leaf 2)) (Leaf 3)) (Node' (Node' (Leaf 4) (Leaf 5)) (Node' (Node' (Leaf 6) (Node' (Leaf 7) (Node' (Leaf 8) (Leaf 9)))) (Leaf 10))))
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
+main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
