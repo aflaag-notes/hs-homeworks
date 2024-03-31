@@ -1,4 +1,4 @@
-import Data.List (sort)
+import Data.List (sort, tails)
 
 -- ### Esercizio 1.1
 merge (x:xs) (y:ys) = if x < y then x : merge xs (y:ys) else y : merge (x:xs) ys
@@ -119,7 +119,85 @@ listToABRAux xs = Node root (listToABRAux left) (listToABRAux right)
           right = tail rootedRight
 
 -- O(n log n) + O(n) + O(n log n) = O(n log n)
+listToABR :: Ord a => [a] -> BinTree a
 listToABR = listToABRAux . orderedDedup . sort
+
+
+-- ### Esercizio 5
+-- definizioni:
+-- head (x:xs) = x
+--
+-- map f [] = []
+-- map f (x:xs) = f x : map f xs
+-- 
+-- tails [] = [[]]
+-- tails (x:xs) = (x:xs) : tails xs
+--
+-- foldr f e [] = e
+-- foldr f e (x:xs) = f x (foldr f e xs)
+--
+-- scanr f e = map (foldr f e) . tails
+-- 
+--
+-- lemma 1:
+--     head . map f = f . head
+-- 
+-- dimostrazione:
+--     head . map f (x:xs) =
+--     head (map f (x:xs)) = {def di .}
+--     head (f x : map f xs) = {def di map}
+--     f x = {def di head}
+--     f (head (x:xs)) = {def di head}
+--     (f . head) (x:xs) = {def di .}
+--
+--
+-- lemma 2:
+-- foldr f e = head . scanr f e
+-- 
+-- dimostrazione:
+-- caso []:
+--      head . scanr f e []
+--      head (map (foldr f e) . tails []) = {def di scanr}
+--      head (map (foldr f e) (tails [])) = {def di .}
+--      head (map (foldr f e) [[]]) = {def di tails}
+--      head ([foldr f e []]) = {def di map}
+--      head ([e]) = {def foldr}
+--      e = {def di head}
+--      foldr f e = {def di foldr}
+--
+-- caso (x:xs)
+--      head . scanr f e (x:xs) =
+--      head (map (foldr f e) . tails (x:xs)) = {def di scanr}
+--      head (map (foldr f e) (tails (x:xs))) = {def di .}
+--      head (map (foldr f e) ((x:xs) : tails xs)) = {def di tails}
+--      (head . map (foldr f e)) ((x:xs) : tails xs) = {def di .}
+--      ((foldr f e) . head) ((x:xs) : tails xs) = {lemma 1}
+--      foldr f e (head ((x:xs) : tails xs)) = {def di .}
+--      foldr f e (x:xs) = {def di head}
+--
+--
+-- derivazione di scanr lineare:
+-- caso []:
+--      scanr f e [] =
+--      map (foldr f e) . tails [] = {def di scanr}
+--      map (foldr f e) (tails []) = {def di .}
+--      map (foldr f e) [[]] = {def di tails}
+--      [foldr f e []] = {def di map}
+--      [e] {def di foldr}
+--
+-- caso (x:xs):
+--      scanr f e (x:xs) =
+--      map (foldr f e) . tails (x:xs) = {def di scanr}
+--      map (foldr f e) (tails (x:xs)) = {def di .}
+--      map (foldr f e) ((x:xs) : tails xs) = {def di tails}
+--      foldr f e (x:xs) : map (foldr f e) (tails xs) = {def di map}
+--      foldr f e (x:xs) : map (foldr f e) . tails xs = {def di .}
+--      foldr f e (x:xs) : scanr f e xs = {def di scanr}
+--      f x (foldr f e xs) : scanr f e xs = {def di foldr}
+--      f x ((head . scanr f e) xs) : scanr f e xs {lemma 2}
+scanr' f e [] = [e]
+scanr' f e (x:xs) = f x (head sxs) : sxs
+    where sxs = scanr' f e xs
 
 
 main :: IO ()
@@ -137,4 +215,5 @@ main :: IO ()
 -- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty))) Empty)))
 -- main = do putStrLn $ show $ maxUnbalBT' (Node' (Node' (Node' (Leaf 1) (Leaf 2)) (Leaf 3)) (Node' (Node' (Leaf 4) (Leaf 5)) (Node' (Node' (Leaf 6) (Node' (Leaf 7) (Node' (Leaf 8) (Leaf 9)))) (Leaf 10))))
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
-main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
+-- main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
+main = do putStrLn $ show $ scanr' (+) 0 [1, 2, 3]
