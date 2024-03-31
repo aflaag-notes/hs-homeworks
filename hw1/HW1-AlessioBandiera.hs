@@ -107,3 +107,6 @@ parts n = [x : y | x <- [1..n], y <- parts (n - x), null y || head y <= x]
 -- è necessario creare le liste, serve comunque sapere quanti elementi
 -- queste devono contenere.
 part3 n = length $ parts n
+
+main :: IO ()
+main = do putStrLn $ show $ part 4
