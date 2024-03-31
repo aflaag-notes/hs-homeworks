@@ -89,8 +89,7 @@ maxUnbalBT' b = abs (fst fb - snd fb)
 
 
 -- ### Esercizio 3
--- T(n) = T(k) + T(n - k - 1) + O(n)
--- dunque il costo dell'algoritmo è O(n log n)
+-- T(n) = T(k) + T(n - k - 1) + O(n) => O(n log n)
 balancedNodesAux n Empty = ([], 0)
 balancedNodesAux n (Node a sx dx) = if n == totalSum then (a : totalNodes, totalSum) else (totalNodes, totalSum)
     where (sxNodes, sxSum) = balancedNodesAux (n + a) sx
