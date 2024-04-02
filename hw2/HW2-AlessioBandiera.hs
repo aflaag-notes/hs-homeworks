@@ -1,4 +1,4 @@
-import Data.List (sort, tails)
+import Data.List (sort)
 
 -- ### Esercizio 1.1
 merge (x:xs) (y:ys) = if x < y then x : merge xs (y:ys) else y : merge (x:xs) ys
@@ -21,7 +21,14 @@ mergeSort xs = head $ skipWhile isNotSingleton (iterate couple (map (\x -> [x]) 
 
 
 -- ### Esercizio 1.2
--- TODO: da fare
+listifyAux [x] = ([], [x])
+listifyAux (x:xs) = if x < head last then (out, x : last) else (last : out, [x])
+    where (out, last) = listifyAux xs
+
+listify xs = last : out
+    where (out, last) = listifyAux xs
+
+mergeSort' xs = head $ skipWhile isNotSingleton (iterate couple (listify xs))
 
 
 -- ### Esercizio 2.1
@@ -119,6 +126,7 @@ listToABRAux xs = Node root (listToABRAux left) (listToABRAux right)
           right = tail rootedRight
 
 -- O(n log n) + O(n) + O(n log n) = O(n log n)
+listToABR :: Ord a => [a] -> BinTree a
 listToABR = listToABRAux . orderedDedup . sort
 
 
@@ -201,6 +209,9 @@ scanr' f e (x:xs) = f x (head sxs) : sxs
 
 main :: IO ()
 -- main = do putStrLn $ show $ mergeSort [5, 3, 4, 2, 1, 6, 8, 7, 0]
+-- main = do putStrLn $ show $ couple [[5], [2, 3, 4]]
+-- main = do putStrLn $ show $ listify [1, 2, 3, 4]
+main = do putStrLn $ show $ mergeSort' [7, 8, 9, 1, 2, 3]
 -- main = do putStrLn $ show $ mapBT (+3) (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ mapBT' (+3) (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ foldrBT (\acc sx dx -> acc + sx + dx) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
@@ -214,6 +225,5 @@ main :: IO ()
 -- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty))) Empty)))
 -- main = do putStrLn $ show $ maxUnbalBT' (Node' (Node' (Node' (Leaf 1) (Leaf 2)) (Leaf 3)) (Node' (Node' (Leaf 4) (Leaf 5)) (Node' (Node' (Leaf 6) (Node' (Leaf 7) (Node' (Leaf 8) (Leaf 9)))) (Leaf 10))))
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
-main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
--- main = do putStrLn $ show $ listToABR [1]
+-- main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
 -- main = do putStrLn $ show $ scanr' (+) 0 [1, 2, 3]
