@@ -59,13 +59,12 @@ foldrBT f acc (Node a sx dx) = f a (foldrBT f acc sx) (foldrBT f acc dx)
 foldrBT' fNodes fLeaves acc (Leaf a) = fLeaves a acc
 foldrBT' fNodes fLeaves acc (Node' sx dx) = fNodes (foldrBT' fNodes fLeaves acc sx) (foldrBT' fNodes fLeaves acc dx)
 
--- TODO: da rifare
 foldlBT f acc Empty = acc
 foldlBT f acc (Node a sx dx) = foldlBT f (foldlBT f (f acc a) sx) dx
 
--- TODO: da rifare
+-- vale lo stesso ragionamento di foldrBT'
 foldlBT' fNodes fLeaves acc (Leaf a) = fLeaves a acc
-foldlBT' fNodes fLeaves acc (Node' sx dx) = foldlBT' fNodes fLeaves (foldlBT' fNodes fLeaves acc sx) dx
+foldlBT' fNodes fLeaves acc (Node' sx dx) = foldlBT' fNodes fLeaves (foldlBT' fNodes fLeaves (fNodes acc) sx) dx
 
 
 -- ### Esercizio 2.2.a
@@ -102,6 +101,7 @@ balancedNodes b = fst (balancedNodesAux 0 b)
 
 -- ### Esercizio 4
 -- O(n)
+-- TODO: rifallo come ha suggerito pietro :)
 orderedDedup [x] = [x]
 orderedDedup xs
     | zxs == [] = []
@@ -119,7 +119,6 @@ listToABRAux xs = Node root (listToABRAux left) (listToABRAux right)
           right = tail rootedRight
 
 -- O(n log n) + O(n) + O(n log n) = O(n log n)
-listToABR :: Ord a => [a] -> BinTree a
 listToABR = listToABRAux . orderedDedup . sort
 
 
@@ -206,8 +205,8 @@ main :: IO ()
 -- main = do putStrLn $ show $ mapBT' (+3) (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ foldrBT (\acc sx dx -> acc + sx + dx) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ foldrBT' (\acc sx dx -> acc + sx + dx) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
--- main = do putStrLn $ show $ foldlBT (+) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
--- main = do putStrLn $ show $ foldlBT' (\sx dx -> sx) (\a acc -> acc + 1) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
+-- main = do putStrLn $ show $ foldlBT (\acc a -> acc + 1) 0 (Node 'a' (Node 'a' Empty Empty) (Node 'a' (Node 'a' (Node 'a' Empty Empty) Empty) Empty))
+-- main = do putStrLn $ show $ foldlBT' (\u -> u + 1) (\a acc -> acc + 1) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ nodesBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ nodesBT' (Node' (Node' (Leaf 10) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ heightBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
@@ -215,5 +214,6 @@ main :: IO ()
 -- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty))) Empty)))
 -- main = do putStrLn $ show $ maxUnbalBT' (Node' (Node' (Node' (Leaf 1) (Leaf 2)) (Leaf 3)) (Node' (Node' (Leaf 4) (Leaf 5)) (Node' (Node' (Leaf 6) (Node' (Leaf 7) (Node' (Leaf 8) (Leaf 9)))) (Leaf 10))))
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
--- main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
-main = do putStrLn $ show $ scanr' (+) 0 [1, 2, 3]
+main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
+-- main = do putStrLn $ show $ listToABR [1]
+-- main = do putStrLn $ show $ scanr' (+) 0 [1, 2, 3]
