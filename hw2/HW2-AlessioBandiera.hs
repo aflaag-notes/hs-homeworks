@@ -94,6 +94,16 @@ maxUnbalBT' b = abs (fst fb - snd fb)
     where fb = foldrBT' (\(hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (\a acc -> acc) (0, 0) b
 
 
+-- ### Esercizio 2.opt
+data Tree a = R a [Tree a]
+    deriving Show
+
+mapT f (R a ts) = R (f a) [mapT f t | t <- ts]
+
+-- foldrT f acc (R a []) = f a
+-- foldrT f acc (R a (t:ts)) = 
+
+
 -- ### Esercizio 3
 -- T(n) = T(k) + T(n - k - 1) + O(n) => O(n log n)
 balancedNodesAux n Empty = ([], 0)
@@ -209,10 +219,8 @@ scanr' f e (x:xs) = f x (head sxs) : sxs
 
 main :: IO ()
 -- main = do putStrLn $ show $ mergeSort [5, 3, 4, 2, 1, 6, 8, 7, 0]
--- main = do putStrLn $ show $ couple [[5], [2, 3, 4]]
--- main = do putStrLn $ show $ listify [1, 2, 3, 4]
-main = do putStrLn $ show $ mergeSort' [7, 8, 9, 1, 2, 3]
--- main = do putStrLn $ show $ mapBT (+3) (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
+-- main = do putStrLn $ show $ mergeSort' [7, 8, 9, 1, 2, 3]
+-- main = do putStrLn $ show $ mapBT (+3) (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty)
 -- main = do putStrLn $ show $ mapBT' (+3) (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ foldrBT (\acc sx dx -> acc + sx + dx) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ foldrBT' (\acc sx dx -> acc + sx + dx) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
@@ -224,6 +232,7 @@ main = do putStrLn $ show $ mergeSort' [7, 8, 9, 1, 2, 3]
 -- main = do putStrLn $ show $ heightBT' (Node' (Node' (Leaf 10) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty))) Empty)))
 -- main = do putStrLn $ show $ maxUnbalBT' (Node' (Node' (Node' (Leaf 1) (Leaf 2)) (Leaf 3)) (Node' (Node' (Leaf 4) (Leaf 5)) (Node' (Node' (Leaf 6) (Node' (Leaf 7) (Node' (Leaf 8) (Leaf 9)))) (Leaf 10))))
+main = do putStrLn $ show $ mapT (+1) (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
 -- main = do putStrLn $ show $ scanr' (+) 0 [1, 2, 3]
