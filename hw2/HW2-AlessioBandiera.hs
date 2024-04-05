@@ -98,10 +98,12 @@ maxUnbalBT' b = abs (fst fb - snd fb)
 data Tree a = R a [Tree a]
     deriving Show
 
-mapT f (R a ts) = R (f a) [mapT f t | t <- ts]
+mapT f (R a ts) = R (f a) (map (mapT f) ts)
 
--- foldrT f acc (R a []) = f a
--- foldrT f acc (R a (t:ts)) = 
+-- TODO: spiegare perché hai fatto sta roba
+foldrT fNode fList acc (R a ts) = fNode a (foldr fList acc (map (foldrT fNode fList acc) ts))
+
+nodesT t = foldrT (\a acc -> acc + 1) (+) 0 t
 
 
 -- ### Esercizio 3
@@ -232,7 +234,10 @@ main :: IO ()
 -- main = do putStrLn $ show $ heightBT' (Node' (Node' (Leaf 10) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty))) Empty)))
 -- main = do putStrLn $ show $ maxUnbalBT' (Node' (Node' (Node' (Leaf 1) (Leaf 2)) (Leaf 3)) (Node' (Node' (Leaf 4) (Leaf 5)) (Node' (Node' (Leaf 6) (Node' (Leaf 7) (Node' (Leaf 8) (Leaf 9)))) (Leaf 10))))
-main = do putStrLn $ show $ mapT (+1) (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
+-- main = do putStrLn $ show $ mapT (+1) (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
+-- main = do putStrLn $ show $ foldrT (+) 0 (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
+-- main = do putStrLn $ show $ nodesT (R 1 [R 2 [R 3 [], R 4 [], R 5 []]])
+main = do putStrLn $ show $ nodesT (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
 -- main = do putStrLn $ show $ scanr' (+) 0 [1, 2, 3]
