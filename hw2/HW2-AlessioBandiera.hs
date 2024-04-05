@@ -1,33 +1,41 @@
 import Data.List (sort)
 
 -- ### Esercizio 1.1
+merge :: Ord a => [a] -> [a] -> [a]
 merge (x:xs) (y:ys) = if x < y then x : merge xs (y:ys) else y : merge (x:xs) ys
 merge xs [] = xs
 merge [] ys = ys
 
+couple :: Ord a => [[a]] -> [[a]]
 couple [] = []
 couple [[x]] = [[x]]
 couple [x] = [x]
 couple (xs:ys:xss) = merge xs ys : couple xss
 
+isNotSingleton :: [a] -> Bool
 isNotSingleton [x] = False
 isNotSingleton _ = True
 
-skipWhile _ [] = []
-skipWhile p (x:xs) = if p x then skipWhile p xs else x
+skipWhile :: a -> (a -> Bool) -> [a] -> a
+skipWhile def _ [] = def
+skipWhile def p (x:xs) = if p x then skipWhile def p xs else x
 
-mergeSort xs = head $ skipWhile isNotSingleton (iterate couple (map (\x -> [x]) xs))
+mergeSort :: Ord a => [a] -> [a]
+mergeSort = head . skipWhile [] isNotSingleton . iterate couple . map (\x -> [x])
 
 
 -- ### Esercizio 1.2
+listifyAux :: Ord a => [a] -> ([[a]], [a])
 listifyAux [x] = ([], [x])
 listifyAux (x:xs) = if x < head last then (out, x : last) else (last : out, [x])
     where (out, last) = listifyAux xs
 
+listify :: Ord a => [a] -> [[a]]
 listify xs = last : out
     where (out, last) = listifyAux xs
 
-mergeSort' xs = head $ skipWhile isNotSingleton (iterate couple (listify xs))
+mergeSort' :: Ord a => [a] -> [a]
+mergeSort' = head . skipWhile [] isNotSingleton . iterate couple . listify
 
 
 -- ### Esercizio 2.1
@@ -36,12 +44,15 @@ data BinTree a = Node a (BinTree a) (BinTree a) | Empty
 data BinTree' a = Node' (BinTree' a) (BinTree' a) | Leaf a
     deriving Show
 
+mapBT :: (a -> b) -> BinTree a -> BinTree b
 mapBT f Empty = Empty
 mapBT f (Node a sx dx) = Node (f a) (mapBT f sx) (mapBT f dx)
 
+mapBT' :: (a -> b) -> BinTree' a -> BinTree' b
 mapBT' f (Leaf a) = Leaf (f a)
 mapBT' f (Node' sx dx) = Node' (mapBT' f sx) (mapBT' f dx)
 
+foldrBT :: (a -> b -> b -> b) -> b -> BinTree a -> b
 foldrBT f acc Empty = acc
 foldrBT f acc (Node a sx dx) = f a (foldrBT f acc sx) (foldrBT f acc dx)
 
@@ -62,33 +73,42 @@ foldrBT f acc (Node a sx dx) = f a (foldrBT f acc sx) (foldrBT f acc dx)
 -- è `a`, tale argomento viene forzato ad essere dello stesso tipo
 -- di `acc` dalla chiamata di f nel caso ricorsivo; questo comportamento
 -- limita la possibilità di effettuare foldrBT'
+foldrBT' :: (b -> b -> b) -> (a -> b -> b) -> b -> BinTree' a -> b
 foldrBT' fNodes fLeaves acc (Leaf a) = fLeaves a acc
 foldrBT' fNodes fLeaves acc (Node' sx dx) = fNodes (foldrBT' fNodes fLeaves acc sx) (foldrBT' fNodes fLeaves acc dx)
 
+foldlBT :: (b -> a -> b) -> b -> BinTree a -> b
 foldlBT f acc Empty = acc
 foldlBT f acc (Node a sx dx) = foldlBT f (foldlBT f (f acc a) sx) dx
 
 -- vale lo stesso ragionamento di foldrBT'
+foldlBT' :: (b -> b) -> (a -> b -> b) -> b -> BinTree' a -> b
 foldlBT' fNodes fLeaves acc (Leaf a) = fLeaves a acc
 foldlBT' fNodes fLeaves acc (Node' sx dx) = foldlBT' fNodes fLeaves (foldlBT' fNodes fLeaves (fNodes acc) sx) dx
 
 
 -- ### Esercizio 2.2.a
+nodesBT :: BinTree a -> Int
 nodesBT b = foldrBT (\a sx dx -> 1 + sx + dx) 0 b
 
+nodesBT' :: BinTree' a -> Int
 nodesBT' b = foldrBT' (\sx dx -> sx + dx + 1) (\a acc -> acc) 1 b
 
 
 -- ### Esercizio 2.2.b
+heightBT :: BinTree a -> Int
 heightBT b = foldrBT (\a sx dx -> 1 + max sx dx) (-1) b
 
+heightBT' :: BinTree' a -> Int
 heightBT' b = foldrBT' (\sx dx -> 1 + max sx dx) (\a acc -> acc) 0 b
 
 
 -- ### Esercizio 2.2.c
+maxUnbalBT :: BinTree a -> Int
 maxUnbalBT b = abs (fst fb - snd fb)
     where fb = foldrBT (\a (hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (-1,-1) b
 
+maxUnbalBT' :: BinTree' a -> Int
 maxUnbalBT' b = abs (fst fb - snd fb)
     where fb = foldrBT' (\(hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (\a acc -> acc) (0, 0) b
 
@@ -97,16 +117,20 @@ maxUnbalBT' b = abs (fst fb - snd fb)
 data Tree a = R a [Tree a]
     deriving Show
 
+mapT :: (a -> b) -> Tree a -> Tree b
 mapT f (R a ts) = R (f a) (map (mapT f) ts)
 
 -- TODO: spiegare perché hai fatto sta roba
+foldrT :: (a -> b -> b) -> (b -> b -> b) -> b -> Tree a -> b
 foldrT fNodes fLists acc (R a ts) = fNodes a (foldr fLists acc (map (foldrT fNodes fLists acc) ts))
 
+nodesT :: Tree a -> Int
 nodesT t = foldrT (\a acc -> acc + 1) (+) 0 t
 
 
 -- ### Esercizio 3
 -- T(n) = T(k) + T(n - k - 1) + O(n) => O(n log n)
+balancedNodesAux :: Int -> BinTree Int -> ([Int], Int)
 balancedNodesAux n Empty = ([], 0)
 balancedNodesAux n (Node a sx dx) = if n == totalSum then (a : totalNodes, totalSum) else (totalNodes, totalSum)
     where (sxNodes, sxSum) = balancedNodesAux (n + a) sx
@@ -114,11 +138,13 @@ balancedNodesAux n (Node a sx dx) = if n == totalSum then (a : totalNodes, total
           totalNodes = sxNodes ++ dxNodes
           totalSum = sxSum + dxSum + a
 
+balancedNodes :: BinTree Int -> [Int]
 balancedNodes b = fst (balancedNodesAux 0 b)
 
 
 -- ### Esercizio 4
 -- O(n)
+orderedDedup :: Ord a => [a] -> [a]
 orderedDedup [x] = [x]
 orderedDedup xs
     | zs == [] = []
@@ -126,6 +152,7 @@ orderedDedup xs
     where zs = filter (\(x, y) -> x /= y) (zip xs $ tail xs)
 
 -- 2T(n/2) + O(n) => T(n) = O(n log n)
+listToABRAux :: Ord a => [a] -> BinTree a
 listToABRAux [] = Empty
 listToABRAux [x] = Node x Empty Empty
 listToABRAux xs = Node root (listToABRAux left) (listToABRAux right)
@@ -210,6 +237,7 @@ listToABR = listToABRAux . orderedDedup . sort
 --      foldr f e (x:xs) : scanr f e xs = {def di scanr}
 --      f x (foldr f e xs) : scanr f e xs = {def di foldr}
 --      f x ((head . scanr f e) xs) : scanr f e xs {lemma 2}
+scanr' :: (a -> b -> b) -> b -> [a] -> [b]
 scanr' f e [] = [e]
 scanr' f e (x:xs) = f x (head sxs) : sxs
     where sxs = scanr' f e xs
@@ -218,10 +246,10 @@ scanr' f e (x:xs) = f x (head sxs) : sxs
 main :: IO ()
 -- main = do putStrLn $ show $ mergeSort [5, 3, 4, 2, 1, 6, 8, 7, 0]
 -- main = do putStrLn $ show $ mergeSort' [7, 8, 9, 1, 2, 3]
--- main = do putStrLn $ show $ mapBT (+3) (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty)
+-- main = do putStrLn $ show $ mapBT (+3) (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ mapBT' (+3) (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ foldrBT (\acc sx dx -> acc + sx + dx) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
--- main = do putStrLn $ show $ foldrBT' (\acc sx dx -> acc + sx + dx) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
+-- main = do putStrLn $ show $ foldrBT' (\sx dx -> sx + dx + 1) (\a acc -> acc) 1 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ foldlBT (\acc a -> acc + 1) 0 (Node 'a' (Node 'a' Empty Empty) (Node 'a' (Node 'a' (Node 'a' Empty Empty) Empty) Empty))
 -- main = do putStrLn $ show $ foldlBT' (\u -> u + 1) (\a acc -> acc + 1) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ nodesBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
@@ -231,9 +259,8 @@ main :: IO ()
 -- main = do putStrLn $ show $ maxUnbalBT (Node 1 (Node 2 (Node 2 Empty Empty) Empty) (Node 3 (Node 4 Empty Empty) (Node 5 (Node 6 Empty (Node 7 Empty (Node 8 Empty Empty))) Empty)))
 -- main = do putStrLn $ show $ maxUnbalBT' (Node' (Node' (Node' (Leaf 1) (Leaf 2)) (Leaf 3)) (Node' (Node' (Leaf 4) (Leaf 5)) (Node' (Node' (Leaf 6) (Node' (Leaf 7) (Node' (Leaf 8) (Leaf 9)))) (Leaf 10))))
 -- main = do putStrLn $ show $ mapT (+1) (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
--- main = do putStrLn $ show $ foldrT (+) 0 (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
--- main = do putStrLn $ show $ nodesT (R 1 [R 2 [R 3 [], R 4 [], R 5 []]])
-main = do putStrLn $ show $ nodesT (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
+main = do putStrLn $ show $ foldrT (\a acc -> a + acc) (\a acc -> a + acc) 0 (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
+-- main = do putStrLn $ show $ nodesT (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
 -- main = do putStrLn $ show $ scanr' (+) 0 [1, 2, 3]
