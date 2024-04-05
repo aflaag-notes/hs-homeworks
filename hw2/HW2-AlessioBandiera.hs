@@ -16,7 +16,6 @@ isNotSingleton _ = True
 skipWhile _ [] = []
 skipWhile p (x:xs) = if p x then skipWhile p xs else x
 
--- TODO: lista vuota
 mergeSort xs = head $ skipWhile isNotSingleton (iterate couple (map (\x -> [x]) xs))
 
 
@@ -101,7 +100,7 @@ data Tree a = R a [Tree a]
 mapT f (R a ts) = R (f a) (map (mapT f) ts)
 
 -- TODO: spiegare perché hai fatto sta roba
-foldrT fNode fList acc (R a ts) = fNode a (foldr fList acc (map (foldrT fNode fList acc) ts))
+foldrT fNodes fLists acc (R a ts) = fNodes a (foldr fLists acc (map (foldrT fNodes fLists acc) ts))
 
 nodesT t = foldrT (\a acc -> acc + 1) (+) 0 t
 
@@ -120,15 +119,12 @@ balancedNodes b = fst (balancedNodesAux 0 b)
 
 -- ### Esercizio 4
 -- O(n)
--- TODO: rifallo come ha suggerito pietro :)
 orderedDedup [x] = [x]
 orderedDedup xs
-    | zxs == [] = []
-    | otherwise = fst zh : snd zh : map snd (tail zxs)
-    where zxs = filter (\(x, y) -> x /= y) (zip xs $ tail xs)
-          zh = head zxs
+    | zs == [] = []
+    | otherwise = (fst . head) zs : map snd zs
+    where zs = filter (\(x, y) -> x /= y) (zip xs $ tail xs)
 
--- TODO: lista vuota
 -- 2T(n/2) + O(n) => T(n) = O(n log n)
 listToABRAux [] = Empty
 listToABRAux [x] = Node x Empty Empty
