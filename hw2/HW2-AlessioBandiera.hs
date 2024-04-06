@@ -127,7 +127,7 @@ mapT f (R a ts) = R (f a) (map (mapT f) ts)
 foldrT :: (a -> b -> b) -> (b -> b -> b) -> b -> Tree a -> b
 foldrT fNodes fLists acc (R a ts) = fNodes a (foldr fLists acc (map (foldrT fNodes fLists acc) ts))
 
--- foldlT :: (b -> a -> b) -> b -> Tree a -> b
+-- TODO: fixa non fujnziona
 foldlT f acc (R a ts) = foldl f a (map (foldlT f (f acc a)) ts)
 
 nodesT :: Tree a -> Int
