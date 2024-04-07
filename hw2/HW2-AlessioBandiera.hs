@@ -127,8 +127,8 @@ mapT f (R a ts) = R (f a) (map (mapT f) ts)
 foldrT :: (a -> b -> b) -> (b -> b -> b) -> b -> Tree a -> b
 foldrT fNodes fLists acc (R a ts) = fNodes a (foldr fLists acc (map (foldrT fNodes fLists acc) ts))
 
--- TODO: fixa non fujnziona
-foldlT f acc (R a ts) = foldl f a (map (foldlT f (f acc a)) ts)
+foldlT :: (b -> a -> b) -> b -> Tree a -> b
+foldlT f acc (R a ts) = foldl (\acc tss -> foldlT f acc tss) (f acc a) ts
 
 nodesT :: Tree a -> Int
 nodesT t = foldrT (\a acc -> acc + 1) (+) 0 t
@@ -138,7 +138,8 @@ heightT t = foldrT (\a acc -> acc + 1) (\a acc -> max a acc) (-1) t
 
 -- TODO: maxUnbalT ;-;
 -- maxUnbalT :: Tree a -> Int
-
+-- maxUnbalT t = abs (fst ft - snd ft)
+--     where ft = foldrT' (\(hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (\a acc -> acc) (0, 0) t
 
 -- ### Esercizio 3
 -- T(n) = T(k) + T(n - k - 1) + O(n) => O(n log n)
@@ -173,6 +174,11 @@ listToABRAux xs = Node root (listToABRAux left) (listToABRAux right)
           right = tail rootedRight
 
 -- O(n log n) + O(n) + O(n log n) = O(n log n)
+-- che risulta essere una complessità ottima rispetto al problema
+-- poiché l'ABR costruito è bilanciato, in quanto l'altezza dell'albero
+-- è in O(log n) per via di come l'ABR viene costruito dalla funzione
+-- `listToABRAux`, che divide ogni lista di in input in 2 sottoliste
+-- di stessa lunghezza
 listToABR :: Ord a => [a] -> BinTree a
 listToABR = listToABRAux . orderedDedup . sort
 
@@ -206,7 +212,7 @@ listToABR = listToABRAux . orderedDedup . sort
 --
 --
 -- lemma 2:
--- foldr f e = head . scanr f e
+--     foldr f e = head . scanr f e
 -- 
 -- dimostrazione:
 -- caso []:
@@ -263,7 +269,7 @@ main :: IO ()
 -- main = do putStrLn $ show $ foldrBT (\acc sx dx -> acc + sx + dx) 0 (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ foldrBT' (\sx dx -> sx + dx + 1) (\a acc -> acc) 1 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ foldlBT (\acc a -> acc + 1) 0 (Node 'a' (Node 'a' Empty Empty) (Node 'a' (Node 'a' (Node 'a' Empty Empty) Empty) Empty))
-main = do putStrLn $ show $ foldlBT' (\u -> u + 1) (\acc a -> acc + 1) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
+-- main = do putStrLn $ show $ foldlBT' (\u -> u + 1) (\acc a -> acc + 1) 0 (Node' (Node' (Leaf 1) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ nodesBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ nodesBT' (Node' (Node' (Leaf 10) (Leaf 2)) (Node' (Node' (Leaf 3) (Leaf 4)) (Leaf 5)))
 -- main = do putStrLn $ show $ heightBT (Node 1 (Node 2 Empty Empty) (Node 3 (Node 4 Empty Empty) Empty))
@@ -272,9 +278,10 @@ main = do putStrLn $ show $ foldlBT' (\u -> u + 1) (\acc a -> acc + 1) 0 (Node' 
 -- main = do putStrLn $ show $ maxUnbalBT' (Node' (Node' (Node' (Leaf 1) (Leaf 2)) (Leaf 3)) (Node' (Node' (Leaf 4) (Leaf 5)) (Node' (Node' (Leaf 6) (Node' (Leaf 7) (Node' (Leaf 8) (Leaf 9)))) (Leaf 10))))
 -- main = do putStrLn $ show $ mapT (+1) (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
 -- main = do putStrLn $ show $ foldrT (\a acc -> a + acc) (\a acc -> a + acc) 0 (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
--- main = do putStrLn $ show $ foldlT (+) 0 (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
+main = do putStrLn $ show $ foldlT (+) 0 (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
 -- main = do putStrLn $ show $ nodesT (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
 -- main = do putStrLn $ show $ heightT (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
+-- main = do putStrLn $ show $ maxUnbalT (R 1 [R 2 [R 2 []], R 3 [R 4 []], R 5 [R 6 [R 7 []]]])
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
 -- main = do putStrLn $ show $ scanr' (+) 0 [1, 2, 3]
