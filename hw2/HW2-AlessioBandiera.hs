@@ -28,11 +28,13 @@ mergeSort = head . skipWhile [] isNotSingleton . iterate couple . map (\x -> [x]
 listifyAux :: Ord a => [a] -> ([[a]], [a])
 listifyAux [x] = ([], [x])
 listifyAux (x:xs) = if x < head last then (out, x : last) else (last : out, [x])
-    where (out, last) = listifyAux xs
+    where
+        (out, last) = listifyAux xs
 
 listify :: Ord a => [a] -> [[a]]
 listify xs = last : out
-    where (out, last) = listifyAux xs
+    where
+        (out, last) = listifyAux xs
 
 mergeSort' :: Ord a => [a] -> [a]
 mergeSort' = head . skipWhile [] isNotSingleton . iterate couple . listify
@@ -106,11 +108,13 @@ heightBT' b = foldrBT' (\sx dx -> 1 + max sx dx) (\a acc -> acc) 0 b
 -- ### Esercizio 2.2.c
 maxUnbalBT :: BinTree a -> Int
 maxUnbalBT b = abs (fst fb - snd fb)
-    where fb = foldrBT (\a (hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (-1,-1) b
+    where
+    fb = foldrBT (\a (hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (-1, -1) b
 
 maxUnbalBT' :: BinTree' a -> Int
 maxUnbalBT' b = abs (fst fb - snd fb)
-    where fb = foldrBT' (\(hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (\a acc -> acc) (0, 0) b
+    where
+        fb = foldrBT' (\(hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (\a acc -> acc) (0, 0) b
 
 
 -- ### Esercizio 2.opt
@@ -120,12 +124,20 @@ data Tree a = R a [Tree a]
 mapT :: (a -> b) -> Tree a -> Tree b
 mapT f (R a ts) = R (f a) (map (mapT f) ts)
 
+foldr' f acc [] = acc
+foldr' f acc [x] = x
+foldr' f acc (x:xs) = f x (foldr' f acc xs)
+
 -- per questa funzione è necessario prendere in input due funzioni,
 -- una per descrivere come gestire il comportamento tra i valori
 -- salvati nei nodi dell'albero rispetto all'accumulatore, l'altra
--- per descrivere come combinare i risultati dei figli
+-- per descrivere come combinare i risultati dei figli; inoltre,
+-- è necessario utilizzare una versione modificata di foldr'
+-- o alternativamente prendere in input due casi base diversi
+-- per gli accumulatori delle due funzioni, altrimenti non è possibile
+-- scrivere alcune funzioni (ad esempio il massimo sbilanciamento)
 foldrT :: (a -> b -> b) -> (b -> b -> b) -> b -> Tree a -> b
-foldrT fNodes fLists acc (R a ts) = fNodes a (foldr fLists acc (map (foldrT fNodes fLists acc) ts))
+foldrT fNodes fLists acc (R a ts) = fNodes a (foldr' fLists acc (map (foldrT fNodes fLists acc) ts))
 
 foldlT :: (b -> a -> b) -> b -> Tree a -> b
 foldlT f acc (R a ts) = foldl (\acc tss -> foldlT f acc tss) (f acc a) ts
@@ -136,20 +148,22 @@ nodesT t = foldrT (\a acc -> acc + 1) (+) 0 t
 heightT :: Tree a -> Int
 heightT t = foldrT (\a acc -> acc + 1) (\x acc -> max x acc) (-1) t
 
--- maxUnbalT :: Tree a -> Int
--- maxUnbalT t = abs (fst ft - snd ft)
-maxUnbalT t = ft
-    where ft = foldrT (\a (accMin, accMax) -> (1 + accMin, 1 + accMax)) (\(xMin, xMax) (accMin, accMax) -> (min xMin accMin, max xMax accMax)) (-1, -1) t
+maxUnbalT :: Tree a -> Int
+maxUnbalT t = abs (fst ft - snd ft)
+    where
+        ft = foldrT (\a (accMin, accMax) -> (1 + accMin, 1 + accMax)) (\(xMin, xMax) (accMin, accMax) -> (min xMin accMin, max xMax accMax)) (-1, -1) t
+
 
 -- ### Esercizio 3
 -- T(n) = T(k) + T(n - k - 1) + O(n) => O(n log n)
 balancedNodesAux :: Int -> BinTree Int -> ([Int], Int)
 balancedNodesAux n Empty = ([], 0)
 balancedNodesAux n (Node a sx dx) = if n == totalSum then (a : totalNodes, totalSum) else (totalNodes, totalSum)
-    where (sxNodes, sxSum) = balancedNodesAux (n + a) sx
-          (dxNodes, dxSum) = balancedNodesAux (n + a) dx
-          totalNodes = sxNodes ++ dxNodes
-          totalSum = sxSum + dxSum + a
+    where
+        (sxNodes, sxSum) = balancedNodesAux (n + a) sx
+        (dxNodes, dxSum) = balancedNodesAux (n + a) dx
+        totalNodes = sxNodes ++ dxNodes
+        totalSum = sxSum + dxSum + a
 
 balancedNodes :: BinTree Int -> [Int]
 balancedNodes b = fst (balancedNodesAux 0 b)
@@ -158,20 +172,17 @@ balancedNodes b = fst (balancedNodesAux 0 b)
 -- ### Esercizio 4
 -- O(n)
 orderedDedup :: Ord a => [a] -> [a]
-orderedDedup [x] = [x]
-orderedDedup xs
-    | zs == [] = []
-    | otherwise = (fst . head) zs : map snd zs
-    where zs = filter (\(x, y) -> x /= y) (zip xs $ tail xs)
+orderedDedup xs = head xs : map snd (filter (uncurry (/=)) (zip xs (tail xs)))
 
 -- 2T(n/2) + O(n) => T(n) = O(n log n)
 listToABRAux :: Ord a => [a] -> BinTree a
 listToABRAux [] = Empty
 listToABRAux [x] = Node x Empty Empty
 listToABRAux xs = Node root (listToABRAux left) (listToABRAux right)
-    where (left, rootedRight) = splitAt (length xs `div` 2) xs
-          root = head rootedRight
-          right = tail rootedRight
+    where
+        (left, rootedRight) = splitAt (length xs `div` 2) xs
+        root = head rootedRight
+        right = tail rootedRight
 
 -- O(n log n) + O(n) + O(n log n) = O(n log n)
 -- che risulta essere una complessità ottima rispetto al problema
@@ -258,7 +269,8 @@ listToABR = listToABRAux . orderedDedup . sort
 scanr' :: (a -> b -> b) -> b -> [a] -> [b]
 scanr' f e [] = [e]
 scanr' f e (x:xs) = f x (head sxs) : sxs
-    where sxs = scanr' f e xs
+    where
+        sxs = scanr' f e xs
 
 
 main :: IO ()
@@ -281,8 +293,8 @@ main :: IO ()
 -- main = do putStrLn $ show $ foldlT (+) 0 (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
 -- main = do putStrLn $ show $ nodesT (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
 -- main = do putStrLn $ show $ heightT (R 1 [R 2 [R 6 [R 7 []]], R 3 [], R 4 [R 5 []]])
--- main = do putStrLn $ show $ maxUnbalT (R 1 [R 2 [R 8 []], R 3 [], R 5 [R 6 [R 7 []]]])
-main = do putStrLn $ show $ maxUnbalT (R 1 [R 2 [R 3 []], R 4 []])
+main = do putStrLn $ show $ maxUnbalT (R 1 [R 2 [R 8 []], R 3 [], R 5 [R 6 [R 7 []]]])
+-- main = do putStrLn $ show $ maxUnbalT (R 1 [R 2 [R 3 []], R 4 []])
 -- main = do putStrLn $ show $ balancedNodes (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty Empty)) (Node 3 (Node 4 Empty Empty) Empty))
 -- main = do putStrLn $ show $ listToABR [5, 2, 7, 8, 2, 2, 7, 2, 7, 1, 5]
 -- main = do putStrLn $ show $ scanr' (+) 0 [1, 2, 3]
