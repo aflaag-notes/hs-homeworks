@@ -1,8 +1,0 @@
-fNodes a (foldr fLists acc (map (foldrT fNodes fLists acc) ts))
-fNodes 1 (foldr fLists (-1, -1) (map (foldrT fNodes fLists (-1, -1)) [R 2 [R 3 []], R 4 []]))
-fNodes 1 (foldr fLists (-1, -1) [(foldrT fNodes fLists (-1, -1)) (R 2 [R 3 []]), (foldrT fNodes fLists (-1, -1)) (R 4 [])]))
-fNodes 1 (foldr fLists (-1, -1) [fNodes 2 (foldr fLists (-1, -1) (map (foldrT fNodes fLists (-1, -1))) [R 3 []]), (foldrT fNodes fLists (-1, -1)) (R 4 [])]))
-fNodes 1 (foldr fLists (-1, -1) [fNodes 2 (foldr fLists (-1, -1) [foldrT fNodes fLists (-1, -1) (R 3 [])]), (foldrT fNodes fLists (-1, -1)) (R 4 [])]))
-fNodes 1 (foldr fLists (-1, -1) [fNodes 2 (foldr fLists (-1, -1) [foldrT fNodes fLists (-1, -1) (R 3 [])]), (foldrT fNodes fLists (-1, -1)) (R 4 [])]))
-fNodes 1 (foldr fLists (-1, -1) [fNodes 2 (foldr fLists (-1, -1) [fNodes 3 (foldr fLists (-1, -1)) []]), (foldrT fNodes fLists (-1, -1)) (R 4 [])]))
-fNodes 1 (foldr fLists (-1, -1) [(0, 1), (0, 0)])
