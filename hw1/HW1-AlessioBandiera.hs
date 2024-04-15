@@ -108,5 +108,6 @@ parts n = [x : y | x <- [1..n], y <- parts (n - x), null y || head y <= x]
 -- queste devono contenere.
 part3 n = length $ parts n
 
+
 main :: IO ()
-main = do putStrLn $ show $ part 4
+main = do putStrLn $ "Alessio Bandiera 1985878"
