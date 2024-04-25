@@ -37,8 +37,35 @@ iterateEnum f x = iterateEnumAux f x 0
 luckyNumbers :: [Int]
 luckyNumbers = diag (iterateEnum nextL [1,3..])
 
+
+-- ### Esercizio 4D.1
+data BinTree a = Node a (BinTree a) (BinTree a) | Empty
+    deriving (Eq, Show)
+
+calkinWilf :: BinTree (Int, Int)
+calkinWilf = calkinWilfAux 1 1
+    where
+        calkinWilfAux m n = Node (m, n) (calkinWilfAux m (m + n)) (calkinWilfAux (m + n) n)
+
+
+-- ### Esercizio 4D.2
+takeNlevels :: Int -> BinTree b -> BinTree b
+takeNlevels 0 _ = Empty
+takeNlevels n (Node a l r) = Node a (takeNlevels (n - 1) l) (takeNlevels (n - 1) r)
+
+
+-- ## Esercizio 4D.3
+visitaLivelli :: Eq a => BinTree a -> [a]
+visitaLivelli Empty = []
+visitaLivelli (Node a l r) = a : visitaLivelliAux [l,r]
+    where
+        visitaLivelliAux [] = []
+        visitaLivelliAux ((Node a l r):qs) = a : visitaLivelliAux (qs ++ (filter (\x -> x /= Empty) [l, r]))
+
+
 main :: IO ()
 -- main = do putStrLn $ "Alessio Bandiera 1985878"
 -- main = do putStrLn $ show $ take 125 insonnia
 -- main = do putStrLn $ show $ take 5 tartaglia
-main = do putStrLn $ show $ take 50 luckyNumbers
+-- main = do putStrLn $ show $ take 50 luckyNumbers
+main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
