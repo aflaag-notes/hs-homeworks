@@ -43,9 +43,28 @@ primRec a h (S n) = h n (primRec a h n)
 
 f = \x w -> (primRec (\z -> S z) (\a b c -> g c a) x w)
 
+
+-- ### Esercizio 2D.2
+allPartitionsStart x = reverse allPartitionsStartAux x
+    where
+        allPartitionsStartAux 0 = []
+        allPartitionsStartAux 3 = [3]
+        allPartitionsStartAux x = 2 : allPartitionsStart (x - 2)
+
+-- nextPart _ (1:1:xs) = repeat 1
+nextPart n (x:y:xs) = if n == x + y then x :  else (x + y) : xs
+    where
+        (z:zs) = nextPart n (y:xs)
+
+allPartitions = allPartitionsAux 2 repeat 1
+    where
+        allPartitionsAux n (x:xs) = (if x == n then (x:repeat 1) : allPartitions (n + 1) (allPartitionsStart (n + 1) ++ repeat 1) else nextPart n (x:xs))
+
+
 -- ### Esercizio 2D.3
 nextP n xs = [] : (filter (\x -> x /= []) xs) ++ map (n:) xs
 
+-- TODO: eventualmente rifallo
 powersetN = powersetNAux 1
     where
         powersetNAux n = [] : map (nextP n) (powersetNAux (n + 1))
@@ -82,4 +101,5 @@ main :: IO ()
 -- main = do putStrLn $ show $ take 5 tartaglia
 -- main = do putStrLn $ show $ take 50 luckyNumbers
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
-main = do putStrLn $ show $ take 10 powersetN
+-- main = do putStrLn $ show $ take 5 powersetN
+main = do putStrLn $ show $ take 22 (map take 10) allPartitions
