@@ -44,6 +44,10 @@ primRec a h (S n) = h n (primRec a h n)
 f = \x w -> (primRec (\z -> S z) (\a b c -> g c a) x w)
 
 
+-- ### Esercizio 2D.1
+partsFromAll n xss = (takeWhile (\xs -> n /= head xs) (map (\xs -> take (length (takeWhile (\x -> x < n) (scanl (+) 0 xs))) xs) xss)) ++ [[n]]
+
+
 -- ### Esercizio 2D.2
 allPartitionsStart x = if even x then allPartitionsStartAux x else 3 : allPartitionsStartAux (x - 3)
     where
@@ -105,5 +109,6 @@ main :: IO ()
 -- main = do putStrLn $ show $ take 5 tartaglia
 -- main = do putStrLn $ show $ take 50 luckyNumbers
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
+main = do putStrLn $ show $ length $ partsFromAll 8 allPartitions
+-- main = do putStrLn $ show $ take 22 (map (take 10) allPartitions)
 -- main = do putStrLn $ show $ take 5 powersetN
-main = do putStrLn $ show $ take 22 (map (take 10) allPartitions)
