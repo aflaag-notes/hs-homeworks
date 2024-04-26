@@ -45,20 +45,24 @@ f = \x w -> (primRec (\z -> S z) (\a b c -> g c a) x w)
 
 
 -- ### Esercizio 2D.2
-allPartitionsStart x = reverse allPartitionsStartAux x
+allPartitionsStart x = if even x then allPartitionsStartAux x else 3 : allPartitionsStartAux (x - 3)
     where
         allPartitionsStartAux 0 = []
-        allPartitionsStartAux 3 = [3]
-        allPartitionsStartAux x = 2 : allPartitionsStart (x - 2)
+        allPartitionsStartAux x = 2 : allPartitionsStartAux (x - 2)
 
--- nextPart _ (1:1:xs) = repeat 1
-nextPart n (x:y:xs) = if n == x + y then x :  else (x + y) : xs
+nextPart n xs = nextPartAux n xs
     where
-        (z:zs) = nextPart n (y:xs)
+        nextPartAux n (x:y:xs) = if (((odd n) && (x == 1 + n `div` 2) && (y == n `div` 2)) || ((even n) && (x == n `div` 2) && (y == n `div` 2))) then (x + y) : xs else (if n - (x + y) >= y then (x + y) : xs else nextPartAux' n 0 (x:y:xs))
+        nextPartAux' n s (x:y:z:xs) = if diff >= y + z then diff : (y + z) : xs else x : nextPartAux' n (s + x) (y:z:xs)
+            where
+                diff = n - s - (y + z)
 
-allPartitions = allPartitionsAux 2 repeat 1
+allPartitions = (repeat 1) : allPartitionsAux 2 (repeat 1)
     where
-        allPartitionsAux n (x:xs) = (if x == n then (x:repeat 1) : allPartitions (n + 1) (allPartitionsStart (n + 1) ++ repeat 1) else nextPart n (x:xs))
+        allPartitionsAux n (x:xs) = if x == n then boh : allPartitionsAux (n + 1) boh else boh1 : allPartitionsAux n boh1
+            where
+                boh = allPartitionsStart (n + 1) ++ repeat 1
+                boh1 = nextPart n (x:xs)
 
 
 -- ### Esercizio 2D.3
@@ -102,4 +106,4 @@ main :: IO ()
 -- main = do putStrLn $ show $ take 50 luckyNumbers
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
 -- main = do putStrLn $ show $ take 5 powersetN
-main = do putStrLn $ show $ take 22 (map take 10) allPartitions
+main = do putStrLn $ show $ take 22 (map (take 10) allPartitions)
