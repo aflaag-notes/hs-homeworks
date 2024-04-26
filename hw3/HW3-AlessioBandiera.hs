@@ -23,12 +23,22 @@ removeNths n = removeNthsAux n n . tail
 
 luckyNumbers = 1 : luckyNumbersAux [3,5..] 3
     where
-        luckyNumbersAux (x:xs) i = x : luckyNumbersAux (take (x - i) xs ++ removeNths x (drop (x - i) xs)) (i + 1)
+        luckyNumbersAux (x:xs) i = x : luckyNumbersAux (fs ++ removeNths x rs) (i + 1)
+            where
+                (fs, rs) = splitAt (x - i) xs
 
 
 -- ### Esercizio 1D.1
 primRec a h 0 = a
 primRec a h n = h (n - 1) (primRec a h (n - 1))
+
+
+-- ### Esercizio 2D.3
+nextP n xs = [] : (filter (\x -> x /= []) xs) ++ map (n:) xs
+
+powersetN = powersetNAux 1
+    where
+        powersetNAux n = [] : map (nextP n) (powersetNAux (n + 1))
 
 
 -- ### Esercizio 4D.1
@@ -47,10 +57,10 @@ takeNlevels 0 _ = Empty
 takeNlevels n (Node a l r) = Node a (takeNlevels (n - 1) l) (takeNlevels (n - 1) r)
 
 
--- ## Esercizio 4D.3
+-- ### Esercizio 4D.3
 visitaLivelli :: Eq a => BinTree a -> [a]
 visitaLivelli Empty = []
-visitaLivelli (Node a l r) = a : visitaLivelliAux [l,r]
+visitaLivelli (Node a l r) = a : visitaLivelliAux [l, r]
     where
         visitaLivelliAux [] = []
         visitaLivelliAux ((Node a l r):qs) = a : visitaLivelliAux (qs ++ (filter (\x -> x /= Empty) [l, r]))
@@ -60,5 +70,6 @@ main :: IO ()
 -- main = do putStrLn $ "Alessio Bandiera 1985878"
 -- main = do putStrLn $ show $ take 125 insonnia
 -- main = do putStrLn $ show $ take 5 tartaglia
-main = do putStrLn $ show $ take 50 luckyNumbers
+-- main = do putStrLn $ show $ take 50 luckyNumbers
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
+main = do putStrLn $ show $ take 10 powersetN
