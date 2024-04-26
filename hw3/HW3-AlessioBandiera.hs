@@ -29,9 +29,19 @@ luckyNumbers = 1 : luckyNumbersAux [3,5..] 3
 
 
 -- ### Esercizio 1D.1
-primRec a h 0 = a
-primRec a h n = h (n - 1) (primRec a h (n - 1))
+data Nats = S Nats | Z
+    deriving (Eq, Show)
 
+-- f Z y = S y
+-- f (S m) y = g y m
+
+g Z b = f b (S Z)
+g (S n) b = f b (f (S b) n)
+
+primRec a h Z = a
+primRec a h (S n) = h n (primRec a h n)
+
+f = \x w -> (primRec (\z -> S z) (\a b c -> g c a) x w)
 
 -- ### Esercizio 2D.3
 nextP n xs = [] : (filter (\x -> x /= []) xs) ++ map (n:) xs

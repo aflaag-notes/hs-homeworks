@@ -1,0 +1,29 @@
+si consideri tipo induttivo
+
+data Nats = S Nats | Z
+
+allora
+
+A := fn xw => (rec (fn z => S z) (fn abc => B c a) x w)
+
+poiché
+
+A Z y = (fn xw => (rec (fn z => S z) (fn abc => B c a) x w)) Z y
+      = rec (fn z => S z) (fn abc => B c a) Z y
+      = (fn z => S z) y
+      = S y
+
+A (S m) y = (fn xw => (rec (fn z => S z) (fn abc => B c a) x w)) (S m) y
+          = rec (fn z => S z) (fn abc => B c a) (S m) y
+          = (fn abc => B c a) m (rec (fn z => S z) (fn abc => B c a) m) y
+          = B y m
+
+e si noti che esiste ed è unico l'omomorfismo
+
+rec (fn z => S z) (fn abc => B c a) 0 = fn z => S z
+rec (fn z => S z) (fn abc => B c a) (S n) = h n (rec (fn z => S z) (fn abc => B c a) n)
+
+in quanto
+
+(fn z => S z) ha tipo Nats -> Nats
+(fn abc => B c a) ha tipo Nats -> b -> Nats -> Nats
