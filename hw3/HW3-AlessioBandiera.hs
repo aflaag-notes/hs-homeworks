@@ -78,6 +78,30 @@ powersetN = powersetNAux 1
         powersetNAux n = [] : map (nextP n) (powersetNAux (n + 1))
 
 
+-- ### Esercizio 3D.1
+allSums [] = []
+allSums (x:xs) = map (x+) xs : allSums xs
+
+diags (xs:xss) = zipWith (:) xs ([] : diags xss)
+
+merge (x:xs) (y:ys) = if x < y then x : merge xs (y:ys) else y : merge (x:xs) ys
+merge xs [] = xs
+merge [] ys = ys
+
+removeDups xs = removeDupsAux 1 (head xs) (tail xs)
+    where
+        removeDupsAux n x [] = if n == 1 then [x] else []
+        removeDupsAux n x (y:xs) = if x == y then removeDupsAux (n + 1) x (xs) else (if n == 1 then x : removeDupsAux 1 y xs else removeDupsAux 1 y xs)
+
+ulams = 1:2: ps where
+    ps = ulamNumbers 1 2
+    ulamNumbers ndiag x = newUlam : ulamNumbers (ndiag + 1) newUlam where
+        sums = allSums ulams
+        interestedSums = foldl1 merge (take ndiag (diags sums))
+        filteredList = filter (\y -> y > x) (removeDups interestedSums)
+        newUlam = head filteredList
+
+
 -- ### Esercizio 4D.1
 data BinTree a = Node a (BinTree a) (BinTree a) | Empty
     deriving (Eq, Show)
@@ -109,6 +133,7 @@ main :: IO ()
 -- main = do putStrLn $ show $ take 5 tartaglia
 -- main = do putStrLn $ show $ take 50 luckyNumbers
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
-main = do putStrLn $ show $ length $ partsFromAll 8 allPartitions
--- main = do putStrLn $ show $ take 22 (map (take 10) allPartitions)
+-- main = do putStrLn $ show $ length $ partsFromAll 8 allPartitions
 -- main = do putStrLn $ show $ take 5 powersetN
+main = do putStrLn $ show $ take 100 ulams
+-- main = do putStrLn $ show $ removeDups [3,4,5,5,6,7,7,8,9,9,10,10,11,12,14]
