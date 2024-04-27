@@ -56,17 +56,19 @@ allPartitionsStart x = if even x then allPartitionsStartAux x else 3 : allPartit
 
 nextPart n xs = nextPartAux n xs
     where
-        nextPartAux n (x:y:xs) = if (((odd n) && (x == 1 + n `div` 2) && (y == n `div` 2)) || ((even n) && (x == n `div` 2) && (y == n `div` 2))) then (x + y) : xs else (if n - (x + y) >= y then (x + y) : xs else nextPartAux' n 0 (x:y:xs))
+        nextPartAux n (x:y:xs) = if (((odd n) && (x == 1 + nh) && (y == nh)) || ((even n) && (x == nh) && (y == nh))) then (x + y) : xs else (if n - (x + y) >= y then (x + y) : xs else nextPartAux' n 0 (x:y:xs))
+            where
+                nh = n `div` 2
         nextPartAux' n s (x:y:z:xs) = if diff >= y + z then diff : (y + z) : xs else x : nextPartAux' n (s + x) (y:z:xs)
             where
                 diff = n - s - (y + z)
 
 allPartitions = (repeat 1) : allPartitionsAux 2 (repeat 1)
     where
-        allPartitionsAux n (x:xs) = if x == n then boh : allPartitionsAux (n + 1) boh else boh1 : allPartitionsAux n boh1
+        allPartitionsAux n (x:xs) = if x == n then nextS : allPartitionsAux (n + 1) nextS else nextP : allPartitionsAux n nextP
             where
-                boh = allPartitionsStart (n + 1) ++ repeat 1
-                boh1 = nextPart n (x:xs)
+                nextS = allPartitionsStart (n + 1) ++ repeat 1
+                nextP = nextPart n (x:xs)
 
 
 -- ### Esercizio 2D.3
@@ -93,13 +95,13 @@ removeDups xs = removeDupsAux 1 (head xs) (tail xs)
         removeDupsAux n x [] = if n == 1 then [x] else []
         removeDupsAux n x (y:xs) = if x == y then removeDupsAux (n + 1) x (xs) else (if n == 1 then x : removeDupsAux 1 y xs else removeDupsAux 1 y xs)
 
-ulams = 1:2: ps where
-    ps = ulamNumbers 1 2
-    ulamNumbers ndiag x = newUlam : ulamNumbers (ndiag + 1) newUlam where
-        sums = allSums ulams
-        interestedSums = foldl1 merge (take ndiag (diags sums))
-        filteredList = filter (\y -> y > x) (removeDups interestedSums)
-        newUlam = head filteredList
+ulams = 1:2 : us
+    where
+        us = ulamNumbers 1 2
+        ulamNumbers ndiag x = nextU : ulamNumbers (ndiag + 1) nextU
+            where
+                mergedDiags = foldl1 merge (take ndiag (diags (allSums ulams)))
+                nextU = head (filter (\y -> y > x) (removeDups mergedDiags))
 
 
 -- ### Esercizio 4D.1
@@ -133,7 +135,6 @@ main :: IO ()
 -- main = do putStrLn $ show $ take 5 tartaglia
 -- main = do putStrLn $ show $ take 50 luckyNumbers
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
--- main = do putStrLn $ show $ length $ partsFromAll 8 allPartitions
+-- main = do putStrLn $ show $ partsFromAll 8 allPartitions
 -- main = do putStrLn $ show $ take 5 powersetN
 main = do putStrLn $ show $ take 100 ulams
--- main = do putStrLn $ show $ removeDups [3,4,5,5,6,7,7,8,9,9,10,10,11,12,14]
