@@ -133,7 +133,7 @@ removeDups :: (Num a, Eq a) => [a] -> [a]
 removeDups xs = removeDupsAux 1 (head xs) (tail xs)
     where
         removeDupsAux n x [] = if n == 1 then [x] else []
-        removeDupsAux n x (y:xs) = if x == y then removeDupsAux (n + 1) x (xs) else (if n == 1 then x : removeDupsAux 1 y xs else removeDupsAux 1 y xs)
+        removeDupsAux n x (y:xs) = if x == y then removeDupsAux (n + 1) x xs else (if n == 1 then x : removeDupsAux 1 y xs else removeDupsAux 1 y xs)
 
 ulams :: [Int]
 ulams = 1:2 : us
@@ -176,6 +176,6 @@ main :: IO ()
 -- main = do putStrLn $ show $ take 5 tartaglia
 -- main = do putStrLn $ show $ take 50 luckyNumbers
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
-main = do putStrLn $ show $ partsFromAll 8 allPartitions
+-- main = do putStrLn $ show $ partsFromAll 8 allPartitions
 -- main = do putStrLn $ show $ take 5 powersetN
--- main = do putStrLn $ show $ take 100 ulams
+main = do putStrLn $ show $ take 100 ulams
