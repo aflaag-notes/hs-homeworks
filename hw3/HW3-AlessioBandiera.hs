@@ -67,6 +67,12 @@ primRec' h g n = snd ((for (\(x, y) -> (x + 1, h x y)) n) (0, g))
 data Nats = S Nats | Z
     deriving (Eq, Show)
 
+fromNat Z = 0
+fromNat (S x) = 1 + fromNat x
+
+intoNat 0 = Z
+intoNat x = S (intoNat (x - 1))
+
 -- e sia primRec su Nats definita come segue
 primRecNats a h Z = a
 primRecNats a h (S n) = h n (primRecNats a h n)
@@ -245,4 +251,5 @@ main :: IO ()
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
 -- main = do putStrLn $ show $ partsFromAll 8 allPartitions
 -- main = do putStrLn $ show $ take 5 powersetN
-main = do putStrLn $ show $ take 100 ulams
+-- main = do putStrLn $ show $ take 100 ulams
+main = do putStrLn $ show $ fromNat $ ackermannSplit' (intoNat 3) (intoNat 4)
