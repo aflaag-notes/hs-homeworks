@@ -21,6 +21,7 @@ removeNths n = removeNthsAux n n . tail
         removeNthsAux n 1 (x:xs) = removeNthsAux n n xs
         removeNthsAux n m (x:xs) = x : removeNthsAux n (m - 1) xs
 
+luckyNumbers :: [Int]
 luckyNumbers = 1 : luckyNumbersAux [3,5..] 3
     where
         luckyNumbersAux (x:xs) i = x : luckyNumbersAux (fs ++ removeNths x rs) (i + 1)
@@ -29,26 +30,61 @@ luckyNumbers = 1 : luckyNumbersAux [3,5..] 3
 
 
 -- ### Esercizio 1D.1
+primRec :: (Eq a, Num a) => (a -> b -> b) -> b -> a -> b
+primRec h g 0 = g
+primRec h g n = h (n - 1) (primRec h g (n - 1))
+
+
+-- ### Esercizio 1D.2
+primRec' :: (Eq a, Num a) => (a -> b -> b) -> b -> a -> b
+primRec' h g n = snd ((for (\(x, y) -> (x + 1, h x y)) n) (0, g))
+    where
+        for f 0 = \x -> x
+        for f n = f . (for f (n - 1))
+
+
+-- ### Esercizio 1D.3
+-- è possibile definire la ricorsione primitiva
+-- attraverso i numerali di Church, poiché dato un certo
+-- 
+-- nChurch = \x y -> x ( ... ( x y ))     [assumiamo che x sia composta n volte]
+-- 
+-- è possibile utilizza la funzione utilizzata per l'esercizio
+-- precedente come segue
+--
+-- primRec h g n = snd (nChurch (\(x, y) -> (x + 1, h x y)) (0, g))
+--               = snd ((\(x, y) -> (x + 1, h x y)) ... (\(x, y) -> (x + 1, h x y)) (0, g))    [la funzione sarà composta su sé stessa n volte]
+--               = snd (for (\(x, y) -> (x + 1, h x y)) (0, g))
+--
+-- per definizione di for; infatti, i numerali di Church costituiscono
+-- di fatto degli iteratori, componendo una data funzione con sé stessa n volte
+
+
+-- ### Esercizio 1D.4
 data Nats = S Nats | Z
     deriving (Eq, Show)
 
--- f Z y = S y
--- f (S m) y = g y m
+ackermann Z y = S y
+ackermann (S m) y = ackermannAux y m
 
-g Z b = f b (S Z)
-g (S n) b = f b (f (S b) n)
+ackermannAux Z b = ackermann b (S Z)
+ackermannAux (S n) b = ackermann b (ackermann (S b) n)
 
-primRec a h Z = a
-primRec a h (S n) = h n (primRec a h n)
+primRec'' a h Z = a
+primRec'' a h (S n) = h n (primRec'' a h n)
 
-f = \x w -> (primRec (\z -> S z) (\a b c -> g c a) x w)
+ackermann' = \x w -> (primRec'' (\z -> S z) (\a b c -> ackermannAux c a) x w)
+
+-- TODO: da finire e decidere se lasciarlo
 
 
 -- ### Esercizio 2D.1
+partsFromAll :: Int -> [[Int]] -> [[Int]]
 partsFromAll n xss = (takeWhile (\xs -> n /= head xs) (map (\xs -> take (length (takeWhile (\x -> x < n) (scanl (+) 0 xs))) xs) xss)) ++ [[n]]
 
 
 -- ### Esercizio 2D.2
+-- TODO: SCRIVERE CHE È SBAGLIATO E DECIDERE SE RIFARLO EVENTUALMENTE
 allPartitionsStart x = if even x then allPartitionsStartAux x else 3 : allPartitionsStartAux (x - 3)
     where
         allPartitionsStartAux 0 = []
@@ -72,29 +108,34 @@ allPartitions = (repeat 1) : allPartitionsAux 2 (repeat 1)
 
 
 -- ### Esercizio 2D.3
+-- TODO: eventualmente rifallo
 nextP n xs = [] : (filter (\x -> x /= []) xs) ++ map (n:) xs
 
--- TODO: eventualmente rifallo
 powersetN = powersetNAux 1
     where
         powersetNAux n = [] : map (nextP n) (powersetNAux (n + 1))
 
 
 -- ### Esercizio 3D.1
+allSums :: (Num a) => [a] -> [[a]]
 allSums [] = []
 allSums (x:xs) = map (x+) xs : allSums xs
 
+diags :: [[a]] -> [[a]]
 diags (xs:xss) = zipWith (:) xs ([] : diags xss)
 
+merge :: (Ord a) => [a] -> [a] -> [a]
 merge (x:xs) (y:ys) = if x < y then x : merge xs (y:ys) else y : merge (x:xs) ys
 merge xs [] = xs
 merge [] ys = ys
 
+removeDups :: (Num a, Eq a) => [a] -> [a]
 removeDups xs = removeDupsAux 1 (head xs) (tail xs)
     where
         removeDupsAux n x [] = if n == 1 then [x] else []
         removeDupsAux n x (y:xs) = if x == y then removeDupsAux (n + 1) x (xs) else (if n == 1 then x : removeDupsAux 1 y xs else removeDupsAux 1 y xs)
 
+ulams :: [Int]
 ulams = 1:2 : us
     where
         us = ulamNumbers 1 2
@@ -135,6 +176,6 @@ main :: IO ()
 -- main = do putStrLn $ show $ take 5 tartaglia
 -- main = do putStrLn $ show $ take 50 luckyNumbers
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
--- main = do putStrLn $ show $ partsFromAll 8 allPartitions
+main = do putStrLn $ show $ partsFromAll 8 allPartitions
 -- main = do putStrLn $ show $ take 5 powersetN
-main = do putStrLn $ show $ take 100 ulams
+-- main = do putStrLn $ show $ take 100 ulams
