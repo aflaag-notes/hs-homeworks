@@ -67,18 +67,22 @@ primRec' h g n = snd ((for (\(x, y) -> (x + 1, h x y)) n) (0, g))
 data Nats = S Nats | Z
     deriving (Eq, Show)
 
+fromNat :: (Num a, Eq a) => Nats -> a
 fromNat Z = 0
 fromNat (S x) = 1 + fromNat x
 
+intoNat :: (Num a, Eq a) => a -> Nats
 intoNat 0 = Z
 intoNat x = S (intoNat (x - 1))
 
 -- e sia primRec su Nats definita come segue
+primRecNats :: a -> (Nats -> a -> a) -> Nats -> a
 primRecNats a h Z = a
 primRecNats a h (S n) = h n (primRecNats a h n)
 
 -- dunque la funzione di Ackermann
 -- su Nats risulta essere definita come segue
+ackermann :: Nats -> Nats -> Nats
 ackermann Z n = S n
 ackermann (S m) Z = ackermann m (S Z)
 ackermann (S m) (S n) = ackermann m (ackermann (S m) n)
@@ -89,6 +93,7 @@ ackermann (S m) (S n) = ackermann m (ackermann (S m) n)
 -- attraverso la ricorsione primitiva sarebbero necessari almeno
 -- due utilizzi di primRecNats al fine di ottenere m ed n singolarmente,
 -- dunque ho preferito scomporre la funzione di ackermann per semplicità, come segue
+ackermannSplit :: Nats -> Nats -> Nats
 ackermannSplit Z y = S y
 ackermannSplit (S m) y = ackermannSplitAux y m
     where
@@ -107,8 +112,10 @@ ackermannSplit (S m) y = ackermannSplitAux y m
 
 -- allora è possibile definire i seguenti lambda termini
 -- per poter definire la funzione di ackermann attraverso primRecNats
+ackermannSplit' :: Nats -> Nats -> Nats
 ackermannSplit' = primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a)
-ackermannSplitAux' = primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p))
+    where
+        ackermannSplitAux' = primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p))
 
 -- e se ne dimostra facilmente la correttezza, infatti
 --
@@ -181,12 +188,12 @@ allPartitions = (repeat 1) : allPartitionsAux 2 (repeat 1)
 
 
 -- ### Esercizio 2D.3
--- TODO: eventualmente rifallo
-nextP n xs = [] : (filter (\x -> x /= []) xs) ++ map (n:) xs
-
-powersetN = powersetNAux 1
+powersetN :: [[[Int]]]
+powersetN = tail (powersetNAux 1)
     where
         powersetNAux n = [] : map (nextP n) (powersetNAux (n + 1))
+            where
+                nextP n xs = [] : (filter (\x -> x /= []) xs) ++ map (n:) xs
 
 
 -- ### Esercizio 3D.1
