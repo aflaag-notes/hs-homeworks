@@ -101,18 +101,16 @@ ackermannSplit (S m) y = ackermannSplitAux y m
 
 -- allora è possibile definire i seguenti lambda termini
 -- per poter definire la funzione di ackermann attraverso primRecNats
-ackermannSplit' = \x w -> (primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) x w)
-ackermannSplitAux' = \x w -> (primRecNats (\z -> ackermannSplit' z (S Z) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p))) x w)
+ackermannSplit' = primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a
+ackermannSplitAux' = primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p))
 
 -- e se ne dimostra facilmente la correttezza, infatti
 --
--- ackermannSplit' Z y = (\x w -> (primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) x w)) Z y
---                     = primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) Z y
+-- ackermannSplit' Z y = primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) Z y
 --                     = (\z -> S z) y
 --                     = S y
 --
--- ackermannSplit' (S m) y = (\x w -> (primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) x w)) (S m) y
---                         = primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) (S m) y
+-- ackermannSplit' (S m) y = primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) (S m) y
 --                         = (\a b c -> ackermannSplitAux' c a) m (primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) m) y
 --                         = ackermannSplitAux' y m
 --
@@ -128,8 +126,9 @@ ackermannSplitAux' = \x w -> (primRecNats (\z -> ackermannSplit' z (S Z) (\p q r
 --
 -- analogamente, per l'altro lambda termine si ottiene che
 --
--- TODO: da finire
-
+-- ackermannSplitAux' Z b = primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p)) Z b
+--                        = (\z -> ackermannSplit' z (S Z)) b
+--                        = ackermannSplit' b (S Z)
 
 -- ### Esercizio 2D.1
 partsFromAll :: Int -> [[Int]] -> [[Int]]
