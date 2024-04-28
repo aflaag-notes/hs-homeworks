@@ -61,21 +61,74 @@ primRec' h g n = snd ((for (\(x, y) -> (x + 1, h x y)) n) (0, g))
 
 
 -- ### Esercizio 1D.4
+-- consideriamo il tipo induttivo dei naturali
+-- definito come segue (ho utilizzato questo per semplicità
+-- di ragionamento)
 data Nats = S Nats | Z
     deriving (Eq, Show)
 
-ackermann Z y = S y
-ackermann (S m) y = ackermannAux y m
+-- e sia primRec su Nats definita come segue
+primRecNats a h Z = a
+primRecNats a h (S n) = h n (primRecNats a h n)
 
-ackermannAux Z b = ackermann b (S Z)
-ackermannAux (S n) b = ackermann b (ackermann (S b) n)
+-- dunque la funzione di Ackermann
+-- su Nats risulta essere definita come segue
+ackermann Z n = S n
+ackermann (S m) Z = A m (S Z)
+ackermann (S m) (S n) = A m (A (S m) n)
 
-primRec'' a h Z = a
-primRec'' a h (S n) = h n (primRec'' a h n)
+-- ma poiché il terzo caso di definizione della funzione di Ackermann
+-- vede in input sia il successore di m che il successore di n,
+-- per scrivere un termine che definisca la funzione di Ackermann
+-- attraverso la ricorsione primitiva sarebbero necessari almeno
+-- due utilizzi di primRecNats al fine di ottenere m ed n singolarmente,
+-- dunque ho preferito scomporre la funzione di ackermann per semplicità, come segue
+ackermannSplit Z y = S y
+ackermannSplit (S m) y = ackermannSplitAux y m
+    where
+        ackermannSplitAux Z b = ackermannSplit b (S Z)
+        ackermannSplitAux (S n) b = ackermannSplit b (ackermannSplit (S b) n)
 
-ackermann' = \x w -> (primRec'' (\z -> S z) (\a b c -> ackermannAux c a) x w)
+-- e le due definizioni sono equivalenti, infatti
+-- 
+-- ackermannSplit Z y = S y = ackermann Z y
+-- ackermannSplit (S m) Z = ackermannSplitAux Z m
+--                        = ackermannSplit m (S Z)
+--                        = ackermann (S m) Z
+-- ackermannSplit (S m) (S n) = ackermannSplitAux (S n) m
+--                            = ackermannSplit m (ackermannSplit (S m) n)
+--                            = ackermann (S m) (S n)
 
--- TODO: da finire e decidere se lasciarlo
+-- allora è possibile definire i seguenti lambda termini
+-- per poter definire la funzione di ackermann attraverso primRecNats
+ackermannSplit' = \x w -> (primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) x w)
+ackermannSplitAux' = \x w -> (primRecNats (\z -> ackermannSplit' z (S Z) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p))) x w)
+
+-- e se ne dimostra facilmente la correttezza, infatti
+--
+-- ackermannSplit' Z y = (\x w -> (primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) x w)) Z y
+--                     = primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) Z y
+--                     = (\z -> S z) y
+--                     = S y
+--
+-- ackermannSplit' (S m) y = (\x w -> (primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) x w)) (S m) y
+--                         = primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) (S m) y
+--                         = (\a b c -> ackermannSplitAux' c a) m (primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) m) y
+--                         = ackermannSplitAux' y m
+--
+-- ed esiste ed è unico l'omomorfismo tale che
+--
+-- primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) Z = \z -> S z
+-- primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) (S n) = (\a b c -> ackermannSplitAux' c a) n (primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a) n)
+-- 
+-- in quanto
+--
+-- (\z -> S z) ha tipo Nats -> Nats
+-- (\a b c -> ackermannSplitAux' c a) ha tipo Nats -> b -> Nats -> Nats
+--
+-- analogamente, per l'altro lambda termine si ottiene che
+--
+-- TODO: da finire
 
 
 -- ### Esercizio 2D.1
