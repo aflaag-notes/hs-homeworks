@@ -74,8 +74,8 @@ primRecNats a h (S n) = h n (primRecNats a h n)
 -- dunque la funzione di Ackermann
 -- su Nats risulta essere definita come segue
 ackermann Z n = S n
-ackermann (S m) Z = A m (S Z)
-ackermann (S m) (S n) = A m (A (S m) n)
+ackermann (S m) Z = ackermann m (S Z)
+ackermann (S m) (S n) = ackermann m (ackermann (S m) n)
 
 -- ma poiché il terzo caso di definizione della funzione di Ackermann
 -- vede in input sia il successore di m che il successore di n,
@@ -101,7 +101,7 @@ ackermannSplit (S m) y = ackermannSplitAux y m
 
 -- allora è possibile definire i seguenti lambda termini
 -- per poter definire la funzione di ackermann attraverso primRecNats
-ackermannSplit' = primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a
+ackermannSplit' = primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a)
 ackermannSplitAux' = primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p))
 
 -- e se ne dimostra facilmente la correttezza, infatti
@@ -129,6 +129,21 @@ ackermannSplitAux' = primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> acke
 -- ackermannSplitAux' Z b = primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p)) Z b
 --                        = (\z -> ackermannSplit' z (S Z)) b
 --                        = ackermannSplit' b (S Z)
+--
+-- ackermannSplitAux' (S n) b = primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p)) (S n) b
+--                            = (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p)) n (primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p)) n) b
+--                            = ackermannSplit' b (ackermannSplit' (S b) n)
+--
+-- ed esiste ed è unico l'omomorfismo tale che
+--
+-- primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p)) Z = \z -> ackermannSplit' z (S Z)
+-- primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p)) (S n) = (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p)) n (primRecNats (\z -> ackermannSplit' z (S Z)) (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p)) n)
+--
+-- in quanto
+--
+-- (\z -> ackermannSplit' z (S Z)) ha tipo Nats -> Nats
+-- (\p q r -> ackermannSplit' r (ackermannSplit' (S r) p)) ha tipo Nats -> q -> Nats -> Nats
+
 
 -- ### Esercizio 2D.1
 partsFromAll :: Int -> [[Int]] -> [[Int]]
