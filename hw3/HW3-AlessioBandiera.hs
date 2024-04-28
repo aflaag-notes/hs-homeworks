@@ -219,9 +219,9 @@ ulams :: [Int]
 ulams = 1:2 : us
     where
         us = ulamNumbers 1 2
-        ulamNumbers ndiag x = nextU : ulamNumbers (ndiag + 1) nextU
+        ulamNumbers n x = nextU : ulamNumbers (n + 1) nextU
             where
-                mergedDiags = foldl1 merge (take ndiag (diags (allSums ulams)))
+                mergedDiags = foldl1 merge (take n (diags (allSums ulams)))
                 nextU = head (filter (\y -> y > x) (removeDups mergedDiags))
 
 
@@ -258,5 +258,6 @@ main :: IO ()
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
 -- main = do putStrLn $ show $ partsFromAll 8 allPartitions
 -- main = do putStrLn $ show $ take 5 powersetN
+main = do putStrLn $ show $ primRec' (^) 10 3
 -- main = do putStrLn $ show $ take 100 ulams
-main = do putStrLn $ show $ fromNat $ ackermannSplit' (intoNat 3) (intoNat 4)
+-- main = do putStrLn $ show $ fromNat $ ackermannSplit' (intoNat 3) (intoNat 4)
