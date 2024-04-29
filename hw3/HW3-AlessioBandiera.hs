@@ -165,26 +165,38 @@ partsFromAll n xss = (takeWhile (\xs -> n /= head xs) (map (\xs -> take (length 
 
 -- ### Esercizio 2D.2
 -- TODO: SCRIVERE CHE È SBAGLIATO E DECIDERE SE RIFARLO EVENTUALMENTE
-allPartitionsStart x = if even x then allPartitionsStartAux x else 3 : allPartitionsStartAux (x - 3)
-    where
-        allPartitionsStartAux 0 = []
-        allPartitionsStartAux x = 2 : allPartitionsStartAux (x - 2)
+-- allPartitionsStart x = if even x then allPartitionsStartAux x else 3 : allPartitionsStartAux (x - 3)
+--     where
+--         allPartitionsStartAux 0 = []
+--         allPartitionsStartAux x = 2 : allPartitionsStartAux (x - 2)
+--
+-- nextPart n xs = nextPartAux n xs
+--     where
+--         nextPartAux n (x:y:xs) = if (((odd n) && (x == 1 + nh) && (y == nh)) || ((even n) && (x == nh) && (y == nh))) then (x + y) : xs else (if n - (x + y) >= y then (x + y) : xs else nextPartAux' n 0 (x:y:xs))
+--             where
+--                 nh = n `div` 2
+--         nextPartAux' n s (x:y:z:xs) = if diff >= y + z then diff : (y + z) : xs else x : nextPartAux' n (s + x) (y:z:xs)
+--             where
+--                 diff = n - s - (y + z)
+--
+-- allPartitions = (repeat 1) : allPartitionsAux 2 (repeat 1)
+--     where
+--         allPartitionsAux n (x:xs) = if x == n then nextS : allPartitionsAux (n + 1) nextS else nextP : allPartitionsAux n nextP
+--             where
+--                 nextS = allPartitionsStart (n + 1) ++ repeat 1
+--                 nextP = nextPart n (x:xs)
 
-nextPart n xs = nextPartAux n xs
-    where
-        nextPartAux n (x:y:xs) = if (((odd n) && (x == 1 + nh) && (y == nh)) || ((even n) && (x == nh) && (y == nh))) then (x + y) : xs else (if n - (x + y) >= y then (x + y) : xs else nextPartAux' n 0 (x:y:xs))
-            where
-                nh = n `div` 2
-        nextPartAux' n s (x:y:z:xs) = if diff >= y + z then diff : (y + z) : xs else x : nextPartAux' n (s + x) (y:z:xs)
-            where
-                diff = n - s - (y + z)
+addOneToLast [] = []
+addOneToLast [x] = [x + 1]
+addOneToLast (x:xs) = x : addOneToLast xs
 
-allPartitions = (repeat 1) : allPartitionsAux 2 (repeat 1)
+isDescending [] = True
+isDescending [x] = True
+isDescending (x:y:xs) = if x < y then False else isDescending (y:xs)
+
+allPartitions = (repeat 1) : allPartitionsAux 2
     where
-        allPartitionsAux n (x:xs) = if x == n then nextS : allPartitionsAux (n + 1) nextS else nextP : allPartitionsAux n nextP
-            where
-                nextS = allPartitionsStart (n + 1) ++ repeat 1
-                nextP = nextPart n (x:xs)
+        allPartitionsAux n = map (++ repeat 1) (filter (\xs -> isDescending xs) (map addOneToLast (partsFromAll (n - 1) allPartitions))) ++ allPartitionsAux (n + 1)
 
 
 -- ### Esercizio 2D.3
@@ -256,8 +268,8 @@ main :: IO ()
 -- main = do putStrLn $ show $ take 5 tartaglia
 -- main = do putStrLn $ show $ take 50 luckyNumbers
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
--- main = do putStrLn $ show $ partsFromAll 8 allPartitions
+main = do putStrLn $ show $ map (\n -> length $ partsFromAll n allPartitions) [1..40]
 -- main = do putStrLn $ show $ take 5 powersetN
-main = do putStrLn $ show $ primRec' (^) 10 3
+-- main = do putStrLn $ show $ primRec' (^) 10 3
 -- main = do putStrLn $ show $ take 100 ulams
 -- main = do putStrLn $ show $ fromNat $ ackermannSplit' (intoNat 3) (intoNat 4)
