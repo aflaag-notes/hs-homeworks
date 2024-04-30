@@ -181,12 +181,22 @@ allPartitions = (repeat 1) : allPartitionsAux 2
 
 
 -- ### Esercizio 2D.3
-powersetN :: [[[Int]]]
-powersetN = tail (powersetNAux 1)
+powersetN :: [[Int]]
+powersetN = [] : powersetNAux 1
     where
-        powersetNAux n = [] : map (nextP n) (powersetNAux (n + 1))
-            where
-                nextP n xs = [] : (filter (\x -> x /= []) xs) ++ map (n:) xs
+        powersetNAux n = map (n:) (takeWhile (\xs -> (xs == []) || (n > head xs)) powersetN) ++ powersetNAux (n + 1)
+
+interleave :: a -> [[a]] -> [[a]]
+interleave n [] = []
+interleave n (xs:xss) = interleaveAux n [] xs ++ interleave n xss
+    where
+        interleaveAux n xs [] = [xs ++ [n]]
+        interleaveAux n xs (y:ys) = (xs ++ [n] ++ (y:ys)) : interleaveAux n (xs ++ [y]) ys
+
+permutationsN :: [[Int]]
+permutationsN = [] : permutationsNAux 1
+    where
+        permutationsNAux n = interleave n (takeWhile (\xs -> (xs == []) || (n > head xs)) permutationsN) ++ permutationsNAux (n + 1)
 
 
 -- ### Esercizio 3D.1
@@ -249,7 +259,9 @@ main :: IO ()
 -- main = do putStrLn $ show $ take 50 luckyNumbers
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
 -- main = do putStrLn $ show $ map (\n -> length $ partsFromAll n allPartitions) [1..40]
--- main = do putStrLn $ show $ take 5 powersetN
+-- main = do putStrLn $ show $ take 32 powersetN
+-- main = do putStrLn $ show $ interleave 3 [[1, 2], [2, 1]]
+main = do putStrLn $ show $ take 14 permutationsN
 -- main = do putStrLn $ show $ primRec' (^) 10 3
-main = do putStrLn $ show $ take 100 ulams
+-- main = do putStrLn $ show $ take 100 ulams
 -- main = do putStrLn $ show $ fromNat $ ackermannSplit' (intoNat 3) (intoNat 4)
