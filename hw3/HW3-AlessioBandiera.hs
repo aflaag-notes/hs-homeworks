@@ -164,14 +164,17 @@ partsFromAll n xss = (takeWhile (\xs -> n /= head xs) (map (\xs -> take (length 
 
 
 -- ### Esercizio 2D.2
+addOneToLast :: (Num a) => [a] -> [a]
 addOneToLast [] = []
 addOneToLast [x] = [x + 1]
 addOneToLast (x:xs) = x : addOneToLast xs
 
+isDescending :: (Ord a) => [a] -> Bool
 isDescending [] = True
 isDescending [x] = True
 isDescending (x:y:xs) = if x < y then False else isDescending (y:xs)
 
+allPartitions :: [[Int]]
 allPartitions = (repeat 1) : allPartitionsAux 2
     where
         allPartitionsAux n = map (++ repeat 1) (filter isDescending (map addOneToLast (partsFromAll (n - 1) allPartitions))) ++ allPartitionsAux (n + 1)
@@ -206,9 +209,8 @@ removeDups xs = removeDupsAux 1 (head xs) (tail xs)
         removeDupsAux n x (y:xs) = if x == y then removeDupsAux (n + 1) x xs else (if n == 1 then x : removeDupsAux 1 y xs else removeDupsAux 1 y xs)
 
 ulams :: [Int]
-ulams = 1:2 : us
+ulams = 1 : 2 : ulamNumbers 1 2
     where
-        us = ulamNumbers 1 2
         ulamNumbers n x = nextU : ulamNumbers (n + 1) nextU
             where
                 mergedDiags = foldl1 merge (take n (diags (allSums ulams)))
@@ -232,7 +234,7 @@ takeNlevels n (Node a l r) = Node a (takeNlevels (n - 1) l) (takeNlevels (n - 1)
 
 
 -- ### Esercizio 4D.3
-visitaLivelli :: Eq a => BinTree a -> [a]
+visitaLivelli :: (Eq a) => BinTree a -> [a]
 visitaLivelli Empty = []
 visitaLivelli (Node a l r) = a : visitaLivelliAux [l, r]
     where
@@ -246,8 +248,8 @@ main :: IO ()
 -- main = do putStrLn $ show $ take 5 tartaglia
 -- main = do putStrLn $ show $ take 50 luckyNumbers
 -- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
-main = do putStrLn $ show $ map (\n -> length $ partsFromAll n allPartitions) [1..40]
+-- main = do putStrLn $ show $ map (\n -> length $ partsFromAll n allPartitions) [1..40]
 -- main = do putStrLn $ show $ take 5 powersetN
 -- main = do putStrLn $ show $ primRec' (^) 10 3
--- main = do putStrLn $ show $ take 100 ulams
+main = do putStrLn $ show $ take 100 ulams
 -- main = do putStrLn $ show $ fromNat $ ackermannSplit' (intoNat 3) (intoNat 4)
