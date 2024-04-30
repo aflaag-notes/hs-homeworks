@@ -261,7 +261,7 @@ main :: IO ()
 -- main = do putStrLn $ show $ map (\n -> length $ partsFromAll n allPartitions) [1..40]
 -- main = do putStrLn $ show $ take 32 powersetN
 -- main = do putStrLn $ show $ interleave 3 [[1, 2], [2, 1]]
-main = do putStrLn $ show $ take 14 permutationsN
+main = do putStrLn $ show $ take 16 permutationsN
 -- main = do putStrLn $ show $ primRec' (^) 10 3
 -- main = do putStrLn $ show $ take 100 ulams
 -- main = do putStrLn $ show $ fromNat $ ackermannSplit' (intoNat 3) (intoNat 4)
