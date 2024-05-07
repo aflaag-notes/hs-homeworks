@@ -109,7 +109,7 @@ heightBT' b = foldrBT' (\sx dx -> 1 + max sx dx) (\a acc -> acc) 0 b
 maxUnbalBT :: BinTree a -> Int
 maxUnbalBT b = abs (fst fb - snd fb)
     where
-    fb = foldrBT (\a (hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (-1, -1) b
+        fb = foldrBT (\a (hssx, hsdx) (hdsx, hddx) -> (1 + max hssx hsdx, 1 + max hdsx hddx)) (-1, -1) b
 
 maxUnbalBT' :: BinTree' a -> Int
 maxUnbalBT' b = abs (fst fb - snd fb)
