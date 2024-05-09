@@ -253,15 +253,4 @@ visitaLivelli (Node a l r) = a : visitaLivelliAux [l, r]
 
 
 main :: IO ()
--- main = do putStrLn $ "Alessio Bandiera 1985878"
--- main = do putStrLn $ show $ take 125 insonnia
--- main = do putStrLn $ show $ take 5 tartaglia
--- main = do putStrLn $ show $ take 50 luckyNumbers
--- main = do putStrLn $ show $ visitaLivelli (takeNlevels 4 calkinWilf)
--- main = do putStrLn $ show $ map (\n -> length $ partsFromAll n allPartitions) [1..40]
--- main = do putStrLn $ show $ take 32 powersetN
--- main = do putStrLn $ show $ interleave 3 [[1, 2], [2, 1]]
-main = do putStrLn $ show $ take 16 permutationsN
--- main = do putStrLn $ show $ primRec' (^) 10 3
--- main = do putStrLn $ show $ take 100 ulams
--- main = do putStrLn $ show $ fromNat $ ackermannSplit' (intoNat 3) (intoNat 4)
+main = do putStrLn $ "Alessio Bandiera 1985878"
