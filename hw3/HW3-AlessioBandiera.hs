@@ -14,19 +14,11 @@ tartaglia = [1] : map nextT tartaglia
 
 
 -- ### Esercizio 3
-removeNths :: (Eq a, Num a) => a -> [b] -> [b]
-removeNths n = removeNthsAux n n . tail
+luckyNumbers = 1 : luckyNumbersAux [1,3..] 1
     where
-        removeNthsAux _ _ [] = []
-        removeNthsAux n 1 (x:xs) = removeNthsAux n n xs
-        removeNthsAux n m (x:xs) = x : removeNthsAux n (m - 1) xs
-
-luckyNumbers :: [Int]
-luckyNumbers = 1 : luckyNumbersAux [3,5..] 3
-    where
-        luckyNumbersAux (x:xs) i = x : luckyNumbersAux (fs ++ removeNths x rs) (i + 1)
+        luckyNumbersAux xs idx = newLucky : luckyNumbersAux (map fst (filter (\(x, i) -> i `mod` newLucky /= 0) (zip xs [1..]))) (idx + 1)
             where
-                (fs, rs) = splitAt (x - i) xs
+                newLucky = xs!!idx
 
 
 -- ### Esercizio 1D.1
