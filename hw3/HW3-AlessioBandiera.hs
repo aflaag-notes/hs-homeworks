@@ -84,7 +84,7 @@ ackermann (S m) (S n) = ackermann m (ackermann (S m) n)
 -- per scrivere un termine che definisca la funzione di Ackermann
 -- attraverso la ricorsione primitiva sarebbero necessari almeno
 -- due utilizzi di primRecNats al fine di ottenere m ed n singolarmente,
--- dunque ho preferito scomporre la funzione di ackermann per semplicità, come segue
+-- dunque ho preferito scomporre la funzione di Ackermann per semplicità, come segue
 ackermannSplit :: Nats -> Nats -> Nats
 ackermannSplit Z y = S y
 ackermannSplit (S m) y = ackermannSplitAux y m
@@ -103,7 +103,7 @@ ackermannSplit (S m) y = ackermannSplitAux y m
 --                            = ackermann (S m) (S n)
 
 -- allora è possibile definire i seguenti lambda termini
--- per poter definire la funzione di ackermann attraverso primRecNats
+-- per poter definire la funzione di Ackermann attraverso primRecNats
 ackermannSplit' :: Nats -> Nats -> Nats
 ackermannSplit' = primRecNats (\z -> S z) (\a b c -> ackermannSplitAux' c a)
     where
