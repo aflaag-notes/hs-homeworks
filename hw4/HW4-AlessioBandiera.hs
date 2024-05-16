@@ -4,12 +4,16 @@ import Control.Monad.State
 data BinTree a = Node a (BinTree a) (BinTree a) | Empty
     deriving Show
 
--- balancedNodes Empty = state (\n -> (([], 0), 0))
-balancedNodes Empty = state (\n -> (Empty, 0))
-balancedNodes (Node a sx dx) = do bsx <- balancedNodes sx
+balancedNodes Empty = return []
+balancedNodes (Node a sx dx) = do (path, subtree) <- get
+                                  put (path + a, subtree)
+                                  bsx <- balancedNodes sx
+                                  (pathSx, subtreeSx) <- get
+                                  put (path + a, subtree)
                                   bdx <- balancedNodes dx
-                                  -- state (\n -> ((if n - totsx - totdx == totsx + totdx + a then a:bsx ++ bdx else bsx ++ bdx, totsx + totdx + a), n + a))
-                                  state (\n -> (Node n bsx bdx, n + a))
+                                  (pathDx, subtreeDx) <- get
+                                  put (path + a, subtreeSx + subtreeDx + a)
+                                  return (if path == subtreeDx + subtreeSx + a then a:bsx ++ bdx else bsx ++ bdx)
 
 
 -- ### Esercizio 3
@@ -55,6 +59,7 @@ eval (Div x y) = do u <- eval x
 
 main :: IO ()
 -- main = do putStrLn $ show $ "Alessio Bandiera"
-main = do putStrLn $ show $ runState (balancedNodes (Node 1 (Node 7 (Node 5 (Node 3 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))) 0
+
+main = do putStrLn $ show $ runState (balancedNodes (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))) (0, 0)
 -- main = do putStrLn $ show $ let term = Div (Const (intoNatBin 6)) (Const (intoNatBin 3)) in runState (eval term) Nothing
 -- main = do putStrLn $ show $ let term = Div (Const (intoNatBin 6)) (Const (intoNatBin 0)) in runState (eval term) Nothing
