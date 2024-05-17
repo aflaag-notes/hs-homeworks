@@ -1,5 +1,7 @@
 import Control.Monad.State
 import Data.Maybe (fromJust)
+import Control.Applicative
+import Data.Function
 
 -- ### Esercizio 2
 data BinTree a = Node a (BinTree a) (BinTree a) | Empty
@@ -28,8 +30,7 @@ f'' (x:xs) = state (\s -> let (res, s') = runState (f'' xs) s
 
 f''' :: [Int] -> State Int [Int]
 f''' [] = pure []
-f''' (x:xs) = pure (:) <*> (pure (*) <*> get <*> pure x ) <*> (state (\s -> (id, s + 1)) <*> f''' xs)
-
+f''' (x:xs) = f''' xs <**> (pure (:) <*> (pure (*) <*> get <*> (state (\s -> (id, s + 1)) <*> pure x)))
 
 balancedNodes b = evalState (balancedNodesAux b) (0, 0)
     where
@@ -47,6 +48,14 @@ balancedNodes b = evalState (balancedNodesAux b) (0, 0)
                                              put (totPath, totSubtree)
                                              return (if path == totSubtree then a:bs else bs)
 
+-- balancedNodes' Empty = pure []
+-- balancedNodes' (Node a sx dx) = pure (+) <*> (state (\s -> let (_, v) = runState (state (\(path, subtree) -> (id, (path + a, subtree))) <*> balancedNodes' sx) s in (v, v))) <*> (pure (+) <*> pure a <*> ())
+-- balancedNodes' (Node a sx dx) = (state (\_ -> (id, (path + a, subtree))) <*> balancedNodes' sx) <**> (state (\_ -> (path + a, subtree)) <*> balancedNodes' dx)
+--     where
+--         (path, subtree) = get
+--         (pathSx, subtreeSx) = get
+--         (pathDx, subtreeDx) = get
+
 
 -- ### Esercizio 3
 data NatBin = Zero NatBin | One NatBin | End
@@ -58,6 +67,8 @@ lengthNatBin (One x) = 1 + lengthNatBin x
 
 isByteNatBin n = lengthNatBin n <= 8
 
+isEndNatBin n = n == End
+
 isByte x = (x <= 255) && (x >= 0)
 
 fromNatBin :: NatBin -> Maybe Int
@@ -68,11 +79,18 @@ fromNatBin x = let n = fromNatBinAux x 0 in if isByte n then Just n else Nothing
         fromNatBinAux End _ = 0
 
 intoNatBin :: Int -> Maybe NatBin
+intoNatBin 0 = Just (Zero End)
 intoNatBin n = if isByte n then Just (intoNatBinAux (n `divMod` 2)) else Nothing
     where
         intoNatBinAux (0, 0) = End
         intoNatBinAux (n, 0) = Zero (intoNatBinAux (n `divMod` 2))
         intoNatBinAux (n, 1) = One (intoNatBinAux (n `divMod` 2))
+
+unpad n = fst (unpadAux n 0 0)
+    where
+        unpadAux End c l = if l == c then (End, c - 1) else (End, c)
+        unpadAux (Zero x) c l = let (res, c') = unpadAux x (c + 1) (l + 1) in if c' /= 0 then (res, c' - 1) else (Zero res, c')
+        unpadAux (One x) c l = let (res, c') = unpadAux x 0 (l + 1) in (One res, 0)
 
 addNatBin m n = addNatBinAux m n 0
     where
@@ -98,13 +116,14 @@ addNatBin m n = addNatBinAux m n 0
 data Term = Const NatBin | Add Term Term -- | Sub Term Term | Mul Term Term | Div Term Term | Mod Term Term
     deriving Show
 
-data MaybeTerm a = JustTerm a | ZeroDivisionErr | NegativeNumberErr | OverflowErr
+data MaybeTerm a = JustTerm a | ZeroDivisionErr | NegativeNumberErr | OverflowErr | InvalidNatBinErr
     deriving Show
 
 instance Functor MaybeTerm where
     fmap f ZeroDivisionErr = ZeroDivisionErr
     fmap f NegativeNumberErr = NegativeNumberErr
     fmap f OverflowErr = OverflowErr
+    fmap f InvalidNatBinErr = InvalidNatBinErr
     fmap f (JustTerm x) = JustTerm (f x)
 
 instance Applicative MaybeTerm where
@@ -112,6 +131,7 @@ instance Applicative MaybeTerm where
     ZeroDivisionErr <*> _ = ZeroDivisionErr
     NegativeNumberErr <*> _ = NegativeNumberErr
     OverflowErr <*> _ = OverflowErr
+    InvalidNatBinErr <*> _ = InvalidNatBinErr
     (JustTerm f) <*> mx = fmap f mx
 
 instance Monad MaybeTerm where
@@ -119,24 +139,28 @@ instance Monad MaybeTerm where
     ZeroDivisionErr >>= _ = ZeroDivisionErr
     NegativeNumberErr >>= _ = NegativeNumberErr
     OverflowErr >>= _ = OverflowErr
+    InvalidNatBinErr >>= _ = InvalidNatBinErr
     (JustTerm x) >>= f = f x
 
 fromJustTerm ZeroDivisionErr = error "MaybeTerm.fromJustTerm: ZeroDivisionErr"
 fromJustTerm NegativeNumberErr = error "MaybeTerm.fromJustTerm: NegativeNumberErr"
 fromJustTerm OverflowErr = error "MaybeTerm.fromJustTerm: OverflowErr"
+fromJustTerm InvalidNatBinErr = error "MaybeTerm.fromJustTerm: InvalidNatBinErr"
 fromJustTerm (JustTerm x) = x
 
-evalTerm :: Term -> MaybeTerm NatBin
-evalTerm t = do res <- evalTermAux t
-                if isByteNatBin res then JustTerm res else OverflowErr
-    where
-        evalTermAux (Const x) = JustTerm x
-        evalTermAux (Add x y) = do m <- evalTermAux x
-                                   n <- evalTermAux y
-                                   if (isByteNatBin m && isByteNatBin n) then JustTerm (m `addNatBin` n) else OverflowErr
+-- evalTerm :: Term -> MaybeTerm NatBin
+-- evalTerm (Const x) = if isByteNatBin ux then (if not (isEndNatBin x) then JustTerm ux else InvalidNatBinErr) else OverflowErr
+--     where
+--         ux = unpad x
+-- evalTerm (Add x y) = do m <- evalTerm x
+--                         n <- evalTerm y
+--                         let res = m `addNatBin` n in if isByteNatBin res then JustTerm res else OverflowErr
 
 main :: IO ()
 -- main = do putStrLn $ show $ "Alessio Bandiera"
 -- main = do putStrLn $ show $ [5, 2] == balancedNodes (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
 main = do putStrLn $ show $ and [x + y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Add (Const $ fromJust $ intoNatBin x) (Const $ fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
+-- main = do putStrLn $ show $ unpad $ Zero $ Zero $ Zero $ Zero End
+-- main = do putStrLn $ show $ unpad $ End
+-- main = do putStrLn $ show $ unpad $ Zero $ One $ Zero $ Zero $ One $ One $ Zero $ Zero End
 -- main = do putStrLn $ show $ runState (f''' [1, 1, 1]) 1

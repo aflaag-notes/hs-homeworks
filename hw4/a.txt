@@ -1,0 +1,39 @@
+runState (f [1, 2]) 1 =
+
+runState (pure (:) <*> (pure (*) <*> get <*> pure 1) <*> (state (\s -> (id, s + 1)) <*> f [2])) 1 =
+
+runState (pure (:) <*> (state (\s -> let (f, s') = runState (pure (*)) s in let (x, s'') = runState get s' in (f x, s'')) <*> pure 1) <*> (state (\s -> (id, s + 1)) <*> f [2])) 1 =
+
+runState (pure (:) <*> state (
+        \t -> let (g, t') = runState (state (\s -> let (f, s') = runState (pure (*)) s in let (x, s'') = runState get s' in (f x, s''))) t
+              in let (y, t'') = runState (pure 1) t'
+                 in (g y, t'')
+    )
+) <*> (state (\s -> (id, s + 1)) <*> f [2])) 1 =
+
+runState (state (
+        \u -> let (h, u') = runState (pure (:)) u
+              in let (z, u'') = runState (
+                    state (
+                        \t -> let (g, t') = runState (state (\s -> let (f, s') = runState (pure (*)) s in let (x, s'') = runState get s' in (f x, s''))) t
+                              in let (y, t'') = runState (pure 1) t'
+                                 in (g y, t'')
+                    )
+              ) u'' in (h z, u'')
+    )
+) <*> (state (\s -> (id, s + 1)) <*> f [2])) 1 =
+
+runState (state (
+    \a -> let (k, a') = runState (
+        state (
+            \u -> let (h, u') = runState (pure (:)) u
+                  in let (z, u'') = runState (
+                        state (
+                            \t -> let (g, t') = runState (state (\s -> let (f, s') = runState (pure (*)) s in let (x, s'') = runState get s' in (f x, s''))) t
+                                  in let (y, t'') = runState (pure 1) t'
+                                     in (g y, t'')
+                        )
+                  ) u'' in (h z, u'')
+        )
+    ) a in let (w, a'') = runState (state (\s -> (id, s + 1))) a' in (k w, a'')
+) <*> f [2])) 1 =
