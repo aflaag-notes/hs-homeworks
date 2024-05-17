@@ -4,6 +4,39 @@ import Control.Monad.State
 data BinTree a = Node a (BinTree a) (BinTree a) | Empty
     deriving Show
 
+-- pure x = S (\s -> (x, s))
+-- stf <*> stx = S (\s -> let (f, s') = runState stf s in let (x, s'') = runState stx s' in (f x, s''))
+
+f :: (Num a) => [a] -> State a [a]
+f [] = return []
+f (x:xs) = do res <- f xs
+              y <- get
+              return (y + 1 : res)
+
+g [] = return []
+g (x:xs) = do res <- g xs
+              return (x + 1 : res)
+
+-- (:) ((+) y 1) (res)
+
+f' [] = state (\s -> ([], s))
+f' (x:xs) = f' xs >>= (\res -> get >>= (\y -> state (\s -> (y + 1: res, s))))
+
+f'' [] = state (\s -> ([], s))
+f'' (x:xs) = state (\s -> let (res, s') = runState (f'' xs) s
+                          in runState (state (\t -> let (y, t') = runState (state (\v -> (v, v))) t
+                                                    in runState (state (\u -> (y + 1:res, u))) t')) s')
+
+-- m1 <*> m2 = m1 >>= (\x1 -> m2 >>= (\x2 -> return (x1 x2)))
+
+getAppl s = state (\s' -> runState get (snd (runState s s')))
+
+f''' :: [Int] -> State Int [Int]
+f''' [] = pure []
+f''' (x:xs) = pure (:) <*> (pure (+) <*> getAppl u <*> pure 1) <*> u 
+    where
+        u = f''' xs
+
 balancedNodes Empty = return []
 balancedNodes (Node a sx dx) = do (path, subtree) <- get
                                   put (path + a, subtree)
@@ -59,7 +92,7 @@ eval (Div x y) = do u <- eval x
 
 main :: IO ()
 -- main = do putStrLn $ show $ "Alessio Bandiera"
-
-main = do putStrLn $ show $ runState (balancedNodes (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))) (0, 0)
+-- main = do putStrLn $ show $ runState (balancedNodes (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))) (0, 0)
 -- main = do putStrLn $ show $ let term = Div (Const (intoNatBin 6)) (Const (intoNatBin 3)) in runState (eval term) Nothing
 -- main = do putStrLn $ show $ let term = Div (Const (intoNatBin 6)) (Const (intoNatBin 0)) in runState (eval term) Nothing
+main = do putStrLn $ show $ runState (f''' [1, 2, 3]) 0
