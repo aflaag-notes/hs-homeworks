@@ -64,32 +64,50 @@ balancedNodes b = evalState (balancedNodesAux b) (0, 0)
                                              put (totPath, totSubtree)
                                              return (if path == totSubtree then a:bs else bs)
 
-ite x y c = if c then x else y
+-- stf <*> stx = state (\s -> let (f, s') = runState stf s' in let (x, s'') = runState stx s'' in (f x, s''))
 
+balancedNodes' :: BinTree Int -> [Int]
 balancedNodes' b = evalState (balancedNodesAux' b) (0, 0)
     where
         balancedNodesAux' Empty = pure []
-        -- balancedNodesAux' Empty = pure Empty
-        balancedNodesAux' (Node a sx dx) = state (\(path, subtree) -> let (bsx, (_, subtreeSx)) = runState (balancedNodesAux' sx) (path + a, subtree)
-                                                                      in runState (state (\t -> let (bdx, (_, subtreeDx)) = runState (balancedNodesAux' dx) (path + a, subtree)
-                                                                                                in let c = pure (==) <*> (pure (+) <*> (pure (+) <*> pure subtreeSx <*> pure subtreeDx) <*> pure a) <*> pure path
-                                                                                                -- in let c = pure True
-                                                                                                   in let bs = bsx ++ bdx
+        balancedNodesAux' (Node a sx dx) = 
+            pure (\(path, subtree) ->
+                runState (pure (\ (_, subtreeSx) ->
+                    -- pure (\bdx (_, subtreeDx) ->
+                    --     pure (let bs = bsx ++ bdx in if path == subtreeSx + subtreeDx + a then a : bs else bs)
+                    --     <* put (path + a, subtreeSx + subtreeDx + a)
+                    -- )
+                    -- <*> (put (path + a, subtree) *> balancedNodesAux' dx)
+                    -- <*> get
+                    [1]
+                ) 
+                -- <*> (put (path + a, subtree) *> balancedNodesAux' sx)
+                <*> get) (path, subtree)
+            )
+            <*> get
 
-                                                                                                     in runState (pure ite <*> (pure (:) <*> pure a <*> pure bs) <*> pure bs <*> c) (path + a, subtreeSx + subtreeDx + a)
-                                                                                                      -- in runState (pure Node <*> pure (a, path, subtree, subtreeSx, subtreeDx) <*> pure bsx <*> pure bdx) (path + a, subtreeSx + subtreeDx + a)
-                                                                                  )) (path + a, subtree))
 
 
-        -- balancedNodesAux' (Node a sx dx) = state (\(path, subtree) -> evalState (
-        --     balancedNodesAux' sx <**> state (\(pathSx, subtreeSx) -> evalState (
-        --         balancedNodesAux' dx <**> state (\(pathDx, subtreeDx) -> evalState (
-        --             pure (++)
-        --         ) (path + a, subtreeSx + subtreeDx + a))
-        --     ) (path + a, subtree))
-        -- ) (path + a, subtree))
+            -- pure (\(path, subtree) bsx (_, subtreeSx) bdx (_, subtreeDx) ->
+            --         let bs = bsx ++ bdx
+            --         in if subtreeSx + subtreeDx + a == path then a:bs else bs)
+            -- <*> (state (\(path, subtree) -> (id, (path + a, subtree))) <*> get)
+            -- <*> balancedNodesAux' sx
+            -- <*> get
+            -- <*> balancedNodesAux' dx
+            -- <*> get
 
-        -- balancedNodes' (Node a sx dx) = pure (++) <*> (get <**> (state (\(path, subtree) -> (id, (path + a, subtree))))) <*> (get <**> (state (\(pathSx, subtreeSx) -> (id, (pathSx, )))))
+        -- balancedNodesAux' (Node a sx dx) =
+        --     pure ()
+        --     <*> get
+        --     <*> balancedNodesAux' sx
+        --     <*> get
+
+        -- balancedNodesAux' (Node a sx dx) = state (\(path, subtree) -> let (bsx, (_, subtreeSx)) = runState (balancedNodesAux' sx) (path + a, subtree)
+        --                                                               in runState (state (\t -> let (bdx, (_, subtreeDx)) = runState (balancedNodesAux' dx) (path + a, subtree)
+        --                                                                                         in let bs = bsx ++ bdx
+        --                                                                                            in runState (pure ite <*> (pure (:) <*> pure a <*> pure bs) <*> pure bs <*> (pure (==) <*> (pure (+) <*> (pure (+) <*> pure subtreeSx <*> pure subtreeDx) <*> pure a) <*> pure path)) (path + a, subtreeSx + subtreeDx + a)
+        --                                                                           )) (path + a, subtree))
 
 
 -- ### Esercizio 3
