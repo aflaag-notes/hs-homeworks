@@ -15,23 +15,25 @@ data BinTree a = Node a (BinTree a) (BinTree a) | Empty
 
 f :: (Num a) => [a] -> State a [a]
 f [] = return []
-f (x:xs) = do res <- f xs
-              y <- get
-              put (y + 1)
+f (x:xs) = do y <- get
+              let y' = y + 1
+              put y'
+              res <- f xs
               return (y * x : res)
 
 f' [] = state (\s -> ([], s))
-f' (x:xs) = f' xs >>= (\res -> get >>= (\y -> put (y + 1) >> (state (\s -> (y * x : res, s)))))
+f' (x:xs) = get >>= (\y -> let y' = y + 1 in put y' >> f' xs >>= (\res -> pure (y * x : res)))
 
 f'' [] = state (\s -> ([], s))
-f'' (x:xs) = state (\s -> let (res, s') = runState (f'' xs) s
-                          in runState (state (\t -> let (y, t') = runState (state (\v -> (v, v))) t
-                                                    in runState (state (\v -> let (_, v') = runState (state (\z -> ((), z + 1))) v
-                                                                              in runState (state (\u -> (y * x : res, u))) v')) t')) s')
+f'' (x:xs) = state (\s -> let (y, s') = runState get s
+                          in let y' = y + 1
+                             in let (_, s'') = runState (state (\u -> ((), y'))) s'
+                                in runState (state (\t -> let (res, s''') = runState (f'' xs) t 
+                                                          in runState (pure (y * x : res)) s''')) s'')
 
 f''' :: [Int] -> State Int [Int]
 f''' [] = pure []
-f''' (x:xs) = f''' xs <**> (pure (:) <*> (pure (*) <*> get <*> (state (\s -> (id, s + 1)) <*> pure x)))
+f''' (x:xs) = pure (:) <*> (pure (*) <*> (get <**> (state (\s -> (id, s + 1)))) <*> pure x) <*> f''' xs
 
 balancedNodes b = evalState (balancedNodesAux b) (0, 0)
     where
@@ -196,10 +198,10 @@ main :: IO ()
 -- main = do putStrLn $ show $ "Alessio Bandiera"
 -- main = do putStrLn $ show $ [5, 2] == balancedNodes (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
 -- main = do putStrLn $ show $ and [x + y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Add (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
-main = do putStrLn $ show $ and [(x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y)) | x <- [0..128], y <- [0..127]]
+-- main = do putStrLn $ show $ and [(x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y)) | x <- [0..128], y <- [0..127]]
 -- main = do putStrLn $ show $ find (\(_, _, c) -> c == False) [(x, y, (x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
 -- main = do putStrLn $ show $ find (\(_, _, c) -> c == False) [(x, y, (x == y) == ((fromJust $ intoNatBin x) == (fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
 -- main = do putStrLn $ show $ removeLeadingZeros $ Zero $ Zero $ Zero $ Zero End
 -- main = do putStrLn $ show $ evalTerm (Value $ One $ One $ One $ One $ One $ One $ One $ One $ One End )
 -- main = do putStrLn $ show $ removeLeadingZeros $ Zero $ One $ Zero $ Zero $ One $ One $ Zero $ Zero End
--- main = do putStrLn $ show $ runState (f''' [1, 1, 1]) 1
+main = do putStrLn $ show $ runState (f''' [1, 1, 1]) 1
