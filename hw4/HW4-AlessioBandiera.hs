@@ -70,13 +70,13 @@ balancedNodes' b = evalState (balancedNodesAux' b) (0, 0)
     where
         -- balancedNodesAux' Empty = pure []
         balancedNodesAux' Empty = pure Empty
-        balancedNodesAux' (Node a sx dx) = state (\(path, subtree) -> let (bsx, (pathSx, subtreeSx)) = runState (balancedNodesAux' sx) (path + a, subtree)
-                                                                      in runState (state (\t -> let (bdx, (pathDx, subtreeDx)) = runState (balancedNodesAux' dx) (path + a, subtree)
+        balancedNodesAux' (Node a sx dx) = state (\(path, subtree) -> let (bsx, (pathSx, subtreeSx)) = runState (balancedNodesAux' sx) (path, subtree)
+                                                                      in runState (state (\t -> let (bdx, (pathDx, subtreeDx)) = runState (balancedNodesAux' dx) (path, subtree)
                                                                                                 -- in let c = pure (==) <*> (pure (+) <*> (pure (+) <*> pure subtreeSx <*> pure subtreeDx) <*> pure a) <*> pure path
                                                                                                 -- in let c = pure True
                                                                                                    -- in let bs = bsx ++ bdx
 
-                                                                                                      -- in runState (pure ite <*> (pure (:) <*> pure a <*> pure bs) <*> pure bs <*> c) t
+                                                                                                     -- in runState (pure ite <*> (pure (:) <*> pure a <*> pure bs) <*> pure bs <*> c) t
                                                                                                       in runState (pure Node <*> pure (a, path, subtree, pathSx, subtreeSx, pathDx, subtreeDx) <*> pure bsx <*> pure bdx) t
                                                                                   )) (path + a, subtree))
 
