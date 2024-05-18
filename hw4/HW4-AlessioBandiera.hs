@@ -68,16 +68,16 @@ ite x y c = if c then x else y
 
 balancedNodes' b = evalState (balancedNodesAux' b) (0, 0)
     where
-        -- balancedNodesAux' Empty = pure []
-        balancedNodesAux' Empty = pure Empty
+        balancedNodesAux' Empty = pure []
+        -- balancedNodesAux' Empty = pure Empty
         balancedNodesAux' (Node a sx dx) = state (\(path, subtree) -> let (bsx, (_, subtreeSx)) = runState (balancedNodesAux' sx) (path + a, subtree)
                                                                       in runState (state (\t -> let (bdx, (_, subtreeDx)) = runState (balancedNodesAux' dx) (path + a, subtree)
-                                                                                                -- in let c = pure (==) <*> (pure (+) <*> (pure (+) <*> pure subtreeSx <*> pure subtreeDx) <*> pure a) <*> pure path
+                                                                                                in let c = pure (==) <*> (pure (+) <*> (pure (+) <*> pure subtreeSx <*> pure subtreeDx) <*> pure a) <*> pure path
                                                                                                 -- in let c = pure True
-                                                                                                   -- in let bs = bsx ++ bdx
+                                                                                                   in let bs = bsx ++ bdx
 
-                                                                                                     -- in runState (pure ite <*> (pure (:) <*> pure a <*> pure bs) <*> pure bs <*> c) t
-                                                                                                      in runState (pure Node <*> pure (a, path, subtree, subtreeSx, subtreeDx) <*> pure bsx <*> pure bdx) (path + a, subtreeSx + subtreeDx + a)
+                                                                                                     in runState (pure ite <*> (pure (:) <*> pure a <*> pure bs) <*> pure bs <*> c) (path + a, subtreeSx + subtreeDx + a)
+                                                                                                      -- in runState (pure Node <*> pure (a, path, subtree, subtreeSx, subtreeDx) <*> pure bsx <*> pure bdx) (path + a, subtreeSx + subtreeDx + a)
                                                                                   )) (path + a, subtree))
 
 
@@ -228,8 +228,8 @@ evalTerm (Add x y) = do m <- evalTerm x
 
 main :: IO ()
 -- main = do putStrLn $ show $ "Alessio Bandiera"
--- main = do putStrLn $ show $ [5, 2] == balancedNodes' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
-main = do putStrLn $ show $ balancedNodes' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
+main = do putStrLn $ show $ [5, 2] == balancedNodes' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
+-- main = do putStrLn $ show $ balancedNodes' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
 -- main = do putStrLn $ show $ visit' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
 -- main = do putStrLn $ show $ and [x + y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Add (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
 -- main = do putStrLn $ show $ and [(x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y)) | x <- [0..128], y <- [0..127]]
