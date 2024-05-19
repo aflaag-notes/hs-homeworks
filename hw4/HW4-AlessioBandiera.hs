@@ -9,26 +9,27 @@ data BinTree a = Node a (BinTree a) (BinTree a) | Empty
     deriving Show
 
 fresh1 val = state (\(n1, n2) -> (n1, (n1 + val, n2)))
-
 append val = state (\(n1, n2) -> (n1, (n1, val : n2)))
-
 updateSub val = state (\(n1, n2) -> (val + sum (take 2 n2), (n1 - val, val + sum (take 2 n2) : (drop 2 n2))))
 
-mlabel Empty = do _ <- append 0
-                  return []
+balancedNodesM b = evalState (balancedNodesMAux b) (0, [])
+    where
+        balancedNodesMAux Empty = do _ <- append 0
+                                     return []
+        balancedNodesMAux (Node val left right) = do n <- fresh1 val
+                                                     lres <- balancedNodesMAux left
+                                                     rres <- balancedNodesMAux right
+                                                     totSubSum <- updateSub val
+                                                     return ((if n == totSubSum then (val:) else id) lres ++ rres)
 
-mlabel (Node val left right) = do n <- fresh1 val
-                                  lres <- mlabel left
-                                  rres <- mlabel right
-                                  totSubSum <- updateSub val
-                                  return ((if n == totSubSum then (val:) else id) lres ++ rres)
-
-alabel Empty = append 0 *> pure []
-alabel (Node val left right) = (\n lres rres totSubSum -> (if n == totSubSum then (val:) else id) lres ++ rres)
-                               <$> fresh1 val
-                               <*> alabel left
-                               <*> alabel right
-                               <*> updateSub val
+balancedNodesA b = evalState (balancedNodesAAux b) (0, [])
+    where
+        balancedNodesAAux Empty = append 0 *> pure []
+        balancedNodesAAux (Node val left right) = (\n lres rres totSubSum -> (if n == totSubSum then (val:) else id) lres ++ rres)
+                                                  <$> fresh1 val
+                                                  <*> balancedNodesAAux left
+                                                  <*> balancedNodesAAux right
+                                                  <*> updateSub val
 
 -- ### Esercizio 3
 data NatBin = End | Zero NatBin | One NatBin
@@ -166,9 +167,7 @@ evalTerm (Add x y) = do m <- evalTerm x
 
 main :: IO ()
 -- main = do putStrLn $ show $ "Alessio Bandiera"
--- main = do putStrLn $ show $ [5, 2] == balancedNodes' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
--- main = do putStrLn $ show $ balancedNodes' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
-main = do putStrLn $ show $ runState (alabel (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))) (0, [])
+main = do putStrLn $ show $ [5, 2] == balancedNodesM (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
 -- main = do putStrLn $ show $ visit' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
 -- main = do putStrLn $ show $ and [x + y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Add (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
 -- main = do putStrLn $ show $ and [(x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y)) | x <- [0..128], y <- [0..127]]
