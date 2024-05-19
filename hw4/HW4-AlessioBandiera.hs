@@ -68,10 +68,38 @@ balancedNodes b = evalState (balancedNodesAux b) (0, 0)
 
 -- pure (\x y -> x + y) <*> pure 1 <*> pure 2 = pure (1 + 2) 
 
+fresh1 val = state (\(n1, n2) -> (n1, (n1 + val, n2)))
+
+append val = state (\(n1, n2) -> (n1, (n1, val : n2)))
+
+updateSub val = state (\(n1, n2) -> (val + sum (take 2 n2), (n1 - val, val + sum (take 2 n2) : (drop 2 n2))))
+
+-- mlabel :: BinTree Int -> State (Int, [Int]) [Int]
+mlabel Empty = do
+  _ <- append 0
+  return []
+
+mlabel (Node val left right) = do
+  n <- fresh1 val
+  
+  lres <- mlabel left
+  rres <- mlabel right
+  totSubSum <- updateSub val
+
+  return ((if n == totSubSum then (val:) else id) lres ++ rres)
+
+ite c x y = if c then x else y
+
+alabel Empty = append 0 *> pure []
+-- alabel (Node val left right) = (pure ite <*> (pure (==) <*> fresh1 val <*> updateSub val) <*> pure (val:) <*> pure id) <*> (pure (++) <*> alabel left <*> alabel right)
+
+alabel (Node val left right) = (pure ite <*> (pure (==) <*> fresh1 val <*> updateSub val) <*> pure (val:) <*> pure id) <*> (pure (++) <*> alabel left <*> alabel right)
+
+
 -- balancedNodes' :: BinTree Int -> [Int]
-balancedNodes' b = evalState (balancedNodesAux' b) (0, 0)
-    where
-        balancedNodesAux' Empty = pure []
+-- balancedNodes' b = evalState (balancedNodesAux' b) (0, 0)
+--     where
+--         balancedNodesAux' Empty = pure []
         -- balancedNodesAux' Empty = pure Empty
         -- balancedNodesAux' (Node a sx dx) = 
         --     pure (\(path, subtree) ->
@@ -120,16 +148,16 @@ balancedNodes' b = evalState (balancedNodesAux' b) (0, 0)
         --         in runState (combine <*> pure stateSx <*> pure stateDx) (path, subtree)
         --     )
 
-        balancedNodesAux' (Node a sx dx) =
-            state (\(path, subtree) ->
-                let (bsx, (_, subtreeSx)) = runState (balancedNodesAux' sx) (path + a, subtree)
-                in runState (state (\t ->
-                    let (bdx, (_, subtreeDx)) = runState (balancedNodesAux' dx) (path + a, subtree)
-                        bs = bsx ++ bdx
-                        totSubtree = subtreeSx + subtreeDx + a
-                    in runState (pure (if path == totSubtree then a : bs else bs)) (path + a, subtreeSx + subtreeDx + a)
-                )) (path + a, subtree)
-            )
+        -- balancedNodesAux' (Node a sx dx) =
+        --     state (\(path, subtree) ->
+        --         let (bsx, (_, subtreeSx)) = runState (balancedNodesAux' sx) (path + a, subtree)
+        --         in runState (state (\t ->
+        --             let (bdx, (_, subtreeDx)) = runState (balancedNodesAux' dx) (path + a, subtree)
+        --                 bs = bsx ++ bdx
+        --                 totSubtree = subtreeSx + subtreeDx + a
+        --             in runState (pure (if path == totSubtree then a : bs else bs)) (path + a, subtreeSx + subtreeDx + a)
+        --         )) (path + a, subtree)
+        --     )
 
 
 -- ### Esercizio 3
@@ -269,7 +297,8 @@ evalTerm (Add x y) = do m <- evalTerm x
 main :: IO ()
 -- main = do putStrLn $ show $ "Alessio Bandiera"
 -- main = do putStrLn $ show $ [5, 2] == balancedNodes' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
-main = do putStrLn $ show $ balancedNodes' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
+-- main = do putStrLn $ show $ balancedNodes' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
+main = do putStrLn $ show $ runState (alabel (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))) (0, [])
 -- main = do putStrLn $ show $ visit' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
 -- main = do putStrLn $ show $ and [x + y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Add (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
 -- main = do putStrLn $ show $ and [(x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y)) | x <- [0..128], y <- [0..127]]
