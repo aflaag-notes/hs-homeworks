@@ -147,29 +147,41 @@ addNatBin m n = addNatBinAux m n 0
         addNatBinAux (One x) (One y) 0 = Zero (addNatBinAux x y 1)
         addNatBinAux (One x) (One y) 1 = One (addNatBinAux x y 1)
 
--- subNatBin m n = subNatBinAux m n 0
---     where
---         subNatBinAux (Zero x) (Zero y) 0 = Zero (subNatBinAux x y 0)
---         subNatBinAux (Zero x) (Zero y) 0 = Zero (subNatBinAux x y 0)
---         subNatBinAux (Zero x) (Zero y) 1 = Zero (subNatBinAux x y 1)
---         subNatBinAux (Zero x) (One y) 0 = One (subNatBinAux x y 1)
---         subNatBinAux (Zero x) (One y) 1 = One (subNatBinAux x y 1)
---         subNatBinAux (One x) (Zero y) 0 = One (subNatBinAux x y 0)
---         subNatBinAux (One x) (Zero y) 1 = Zero (subNatBinAux x y 0)
---         subNatBinAux (One x) (One y) 0 = Zero (subNatBinAux x y 0)
---         subNatBinAux (One x) (One y) 1 = One (subNatBinAux x y 1)
+subNatBin m n = subNatBinAux m n 0
+    where
+        subNatBinAux End End _ = End
+        subNatBinAux (Zero x) End 0 = Zero (subNatBinAux x End 0)
+        subNatBinAux (Zero x) End 1 = One (subNatBinAux x End 1)
+        subNatBinAux (One x) End 0 = One (subNatBinAux x End 0)
+        subNatBinAux (One x) End 1 = Zero (subNatBinAux x End 0)
+        subNatBinAux End (Zero x) 0 = Zero (subNatBinAux End x 0)
+        subNatBinAux End (Zero x) 1 = One (subNatBinAux End x 1)
+        subNatBinAux End (One x) 0 = One (subNatBinAux End x 1)
+        subNatBinAux End (One x) 1 = Zero (subNatBinAux End x 1)
+        subNatBinAux (Zero x) (Zero y) 0 = Zero (subNatBinAux x y 0)
+        subNatBinAux (Zero x) (Zero y) 1 = One (subNatBinAux x y 1)
+        subNatBinAux (Zero x) (One y) 0 = One (subNatBinAux x y 1)
+        subNatBinAux (Zero x) (One y) 1 = Zero (subNatBinAux x y 1)
+        subNatBinAux (One x) (Zero y) 0 = One (subNatBinAux x y 0)
+        subNatBinAux (One x) (Zero y) 1 = Zero (subNatBinAux x y 0)
+        subNatBinAux (One x) (One y) 0 = Zero (subNatBinAux x y 0)
+        subNatBinAux (One x) (One y) 1 = One (subNatBinAux x y 1)
 
 evalTerm :: Term -> MaybeTerm NatBin
 evalTerm (Value x) = checkNatBinValue x
+evalTerm (Sub x y) = do m <- evalTerm x
+                        n <- evalTerm y
+                        JustTerm (subNatBin m n)
 evalTerm (Add x y) = do m <- evalTerm x
                         n <- evalTerm y
                         let res = m `addNatBin` n in if isByteNatBin res then JustTerm res else OverflowErr
 
 main :: IO ()
 -- main = do putStrLn $ show $ "Alessio Bandiera"
-main = do putStrLn $ show $ [5, 2] == balancedNodesM (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
+-- main = do putStrLn $ show $ [5, 2] == balancedNodesM (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
 -- main = do putStrLn $ show $ visit' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
 -- main = do putStrLn $ show $ and [x + y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Add (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
+main = do putStrLn $ show $ and [x - y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Sub (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127], x >= y]
 -- main = do putStrLn $ show $ and [(x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y)) | x <- [0..128], y <- [0..127]]
 -- main = do putStrLn $ show $ find (\(_, _, c) -> c == False) [(x, y, (x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
 -- main = do putStrLn $ show $ find (\(_, _, c) -> c == False) [(x, y, (x == y) == ((fromJust $ intoNatBin x) == (fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
