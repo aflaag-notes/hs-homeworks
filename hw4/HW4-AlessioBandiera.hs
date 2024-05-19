@@ -8,157 +8,27 @@ import Data.List (find)
 data BinTree a = Node a (BinTree a) (BinTree a) | Empty
     deriving Show
 
--- pure x = S (\s -> (x, s))
--- stf <*> stx = S (\s -> let (f, s') = runState stf s in let (x, s'') = runState stx s' in (f x, s''))
-
--- m1 <*> m2 = m1 >>= (\x1 -> m2 >>= (\x2 -> return (x1 x2)))
-
-f :: (Num a) => [a] -> State a [a]
-f [] = return []
-f (x:xs) = do y <- get
-              let y' = y + 1
-              put y'
-              res <- f xs
-              return (y * x : res)
-
-f' [] = state (\s -> ([], s))
-f' (x:xs) = get >>= (\y -> let y' = y + 1 in put y' >> f' xs >>= (\res -> pure (y * x : res)))
-
-f'' [] = state (\s -> ([], s))
-f'' (x:xs) = state (\s -> let (y, s') = runState get s
-                          in let y' = y + 1
-                             in let (_, s'') = runState (state (\u -> ((), y'))) s'
-                                in runState (state (\t -> let (res, s''') = runState (f'' xs) t 
-                                                          in runState (pure (y * x : res)) s''')) s'')
-
-f''' :: [Int] -> State Int [Int]
-f''' [] = pure []
-f''' (x:xs) = pure (:) <*> (pure (*) <*> (get <**> (state (\s -> (id, s + 1)))) <*> pure x) <*> f''' xs
-
-visit b = evalState (visitAux b) 0
-    where
-        visitAux Empty = return []
-        visitAux (Node a sx dx) = do bsx <- visitAux sx
-                                     bdx <- visitAux dx
-                                     return (a:bsx ++ bdx)
-
-visit' b = evalState (visitAux' b) 0
-    where
-        visitAux' Empty = pure []
-        visitAux' (Node a sx dx) = pure (++) <*> (pure (:) <*> pure a <*> visitAux' sx) <*> visitAux' dx
-
-
-balancedNodes b = evalState (balancedNodesAux b) (0, 0)
-    where
-        balancedNodesAux Empty = return []
-        balancedNodesAux (Node a sx dx) = do (path, subtree) <- get
-                                             let totPath = path + a
-                                             put (totPath, subtree)
-                                             bsx <- balancedNodesAux sx
-                                             (_, subtreeSx) <- get
-                                             put (totPath, subtree)
-                                             bdx <- balancedNodesAux dx
-                                             (_, subtreeDx) <- get
-                                             let totSubtree = subtreeSx + subtreeDx + a
-                                             let bs = bsx ++ bdx
-                                             put (totPath, totSubtree)
-                                             return (if path == totSubtree then a:bs else bs)
-
--- stf <*> stx = state (\s -> let (f, s') = runState stf s' in let (x, s'') = runState stx s'' in (f x, s''))
-
--- pure (\x y -> x + y) <*> pure 1 <*> pure 2 = pure (1 + 2) 
-
 fresh1 val = state (\(n1, n2) -> (n1, (n1 + val, n2)))
 
 append val = state (\(n1, n2) -> (n1, (n1, val : n2)))
 
 updateSub val = state (\(n1, n2) -> (val + sum (take 2 n2), (n1 - val, val + sum (take 2 n2) : (drop 2 n2))))
 
--- mlabel :: BinTree Int -> State (Int, [Int]) [Int]
-mlabel Empty = do
-  _ <- append 0
-  return []
+mlabel Empty = do _ <- append 0
+                  return []
 
-mlabel (Node val left right) = do
-  n <- fresh1 val
-  
-  lres <- mlabel left
-  rres <- mlabel right
-  totSubSum <- updateSub val
-
-  return ((if n == totSubSum then (val:) else id) lres ++ rres)
-
-ite c x y = if c then x else y
+mlabel (Node val left right) = do n <- fresh1 val
+                                  lres <- mlabel left
+                                  rres <- mlabel right
+                                  totSubSum <- updateSub val
+                                  return ((if n == totSubSum then (val:) else id) lres ++ rres)
 
 alabel Empty = append 0 *> pure []
--- alabel (Node val left right) = (pure ite <*> (pure (==) <*> fresh1 val <*> updateSub val) <*> pure (val:) <*> pure id) <*> (pure (++) <*> alabel left <*> alabel right)
-
-alabel (Node val left right) = (pure ite <*> (pure (==) <*> fresh1 val <*> updateSub val) <*> pure (val:) <*> pure id) <*> (pure (++) <*> alabel left <*> alabel right)
-
-
--- balancedNodes' :: BinTree Int -> [Int]
--- balancedNodes' b = evalState (balancedNodesAux' b) (0, 0)
---     where
---         balancedNodesAux' Empty = pure []
-        -- balancedNodesAux' Empty = pure Empty
-        -- balancedNodesAux' (Node a sx dx) = 
-        --     pure (\(path, subtree) ->
-        --         evalState (pure (\bsx (_, subtreeSx) ->
-        --             evalState (pure (\bdx (_, subtreeDx) ->
-        --                 evalState (
-        --                           pure (Node (a, path, subtree, subtreeSx, subtreeDx) bsx bdx)
-        --                           ) (path + a, subtreeSx + subtreeDx + a)
-        --             )
-        --             <*> (put (path + a, subtree) *> balancedNodesAux' dx)
-        --             <*> get
-        --             ) (path + a, subtree)
-        --         ) 
-        --         <*> (put (path + a, subtree) *> balancedNodesAux' sx)
-        --         <*> get
-        --         ) (path + a, subtree)
-        --     )
-        --     <*> get
-
-
-
-            -- pure (\(path, subtree) bsx (_, subtreeSx) bdx (_, subtreeDx) ->
-            --         let bs = bsx ++ bdx
-            --         in if subtreeSx + subtreeDx + a == path then a:bs else bs)
-            -- <*> (state (\(path, subtree) -> (id, (path + a, subtree))) <*> get)
-            -- <*> balancedNodesAux' sx
-            -- <*> get
-            -- <*> balancedNodesAux' dx
-            -- <*> get
-
-        -- balancedNodesAux' (Node a sx dx) =
-        --     pure ()
-        --     <*> get
-        --     <*> balancedNodesAux' sx
-        --     <*> get
-
-
-        -- balancedNodesAux' (Node a sx dx) =
-        --     state (\(path, subtree) ->
-        --         let stateSx = runState (balancedNodesAux' sx) (path + a, subtree)
-        --             stateDx = runState (balancedNodesAux' dx) (path + a, subtree)
-        --             combine (bsx, (_, subtreeSx)) (bdx, (_, subtreeDx)) =
-        --                 let bs = bsx ++ bdx
-        --                     totSubtree = subtreeSx + subtreeDx + a
-        --                 in state (\_ -> (if path == totSubtree then a : bs else bs, (path + a, subtreeSx + subtreeDx + a)))
-        --         in runState (combine <*> pure stateSx <*> pure stateDx) (path, subtree)
-        --     )
-
-        -- balancedNodesAux' (Node a sx dx) =
-        --     state (\(path, subtree) ->
-        --         let (bsx, (_, subtreeSx)) = runState (balancedNodesAux' sx) (path + a, subtree)
-        --         in runState (state (\t ->
-        --             let (bdx, (_, subtreeDx)) = runState (balancedNodesAux' dx) (path + a, subtree)
-        --                 bs = bsx ++ bdx
-        --                 totSubtree = subtreeSx + subtreeDx + a
-        --             in runState (pure (if path == totSubtree then a : bs else bs)) (path + a, subtreeSx + subtreeDx + a)
-        --         )) (path + a, subtree)
-        --     )
-
+alabel (Node val left right) = (\n lres rres totSubSum -> (if n == totSubSum then (val:) else id) lres ++ rres)
+                               <$> fresh1 val
+                               <*> alabel left
+                               <*> alabel right
+                               <*> updateSub val
 
 -- ### Esercizio 3
 data NatBin = End | Zero NatBin | One NatBin
