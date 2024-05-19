@@ -108,6 +108,18 @@ balancedNodes' b = evalState (balancedNodesAux' b) (0, 0)
         --     <*> balancedNodesAux' sx
         --     <*> get
 
+
+        -- balancedNodesAux' (Node a sx dx) =
+        --     state (\(path, subtree) ->
+        --         let stateSx = runState (balancedNodesAux' sx) (path + a, subtree)
+        --             stateDx = runState (balancedNodesAux' dx) (path + a, subtree)
+        --             combine (bsx, (_, subtreeSx)) (bdx, (_, subtreeDx)) =
+        --                 let bs = bsx ++ bdx
+        --                     totSubtree = subtreeSx + subtreeDx + a
+        --                 in state (\_ -> (if path == totSubtree then a : bs else bs, (path + a, subtreeSx + subtreeDx + a)))
+        --         in runState (combine <*> pure stateSx <*> pure stateDx) (path, subtree)
+        --     )
+
         balancedNodesAux' (Node a sx dx) =
             state (\(path, subtree) ->
                 let (bsx, (_, subtreeSx)) = runState (balancedNodesAux' sx) (path + a, subtree)
