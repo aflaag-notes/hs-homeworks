@@ -49,7 +49,7 @@ data BinTree a = Node a (BinTree a) (BinTree a) | Empty
 -- seguente invece permette di risolvere l'esercizio senza creare dipendenze:
 --   - lo stato dell'algoritmo sarà un (Int, [Int]), dove il primo intero
 --     rappresenta il cammino dalla radice al nodo corrente, nodo corrente
---     escluso, mentre la lista rappresenta il "running total" dei sottoalberi
+--     escluso, mentre la lista rappresenta lo "stack dei totali" dei sottoalberi
 --   - salvare il valore del cammino dalla radice (che esclude il nodo corrente),
 --     e ad esso sommargli il valore del nodo corrente (per le chiamate successive)
 --   - eseguire la ricorsione sul figlio sinistro (per la quale era necessario
@@ -65,7 +65,7 @@ data BinTree a = Node a (BinTree a) (BinTree a) | Empty
 --         poiché questo rappresenta di fatto il totale del sottoalbero corrente,
 --         nodo corrente incluso, da rimandare al padre (infatti le foglie non
 --         fanno altro che aggiungere 0 in testa alla lista corrente)
--- Questo algoritmo, poiché mantiene il "running total" dei sottoalberi, non
+-- Questo algoritmo, poiché mantiene lo "stack dei totali" dei sottoalberi, non
 -- necessita di generare dipendenze del tipo descritto precedentemente, ed è
 -- dunque possibile trasformare il codice scritto con le monadi in un codice
 -- che utilizza esclusivamente Applicative
