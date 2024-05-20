@@ -33,7 +33,18 @@ balancedNodesA b = evalState (balancedNodesAAux b) (0, [])
 
 -- ### Esercizio 3
 data NatBin = End | Zero NatBin | One NatBin
-    deriving (Eq, Show)
+    deriving Show
+
+instance Eq NatBin where
+    m == n = equalAux (removeLeadingZeros m) (removeLeadingZeros n)
+        where
+            equalAux End End = True
+            equalAux End _ = False
+            equalAux _ End = False
+            equalAux (Zero x) (Zero y) = equalAux x y
+            equalAux (Zero x) (One y) = False
+            equalAux (One x) (Zero y) = False
+            equalAux (One x) (One y) = equalAux x y
 
 instance Ord NatBin where
     m <= n = let (c, t) = compareAux (removeLeadingZeros m) (removeLeadingZeros n) in if t then c else True
@@ -69,7 +80,9 @@ removeLeadingZeros n = fst (removeLeadingZerosAux n 0 0)
         removeLeadingZerosAux (Zero x) c l = let (res, c') = removeLeadingZerosAux x (c + 1) (l + 1) in if c' /= 0 then (res, c' - 1) else (Zero res, c')
         removeLeadingZerosAux (One x) c l = let (res, c') = removeLeadingZerosAux x 0 (l + 1) in (One res, 0)
 
-minValueNatBin = fromJust (intoNatBin 0)
+zeroNatBin = Zero End
+oneNatBin = One End
+minValueNatBin = zeroNatBin
 maxValueNatBin = fromJust (intoNatBin 255)
 
 lengthNatBin m = lengthNatBinAux (removeLeadingZeros m)
@@ -82,7 +95,7 @@ isByteNatBin n = n <= maxValueNatBin
 
 isEndNatBin n = n == End
 
-data Term = Value NatBin | Add Term Term | Sub Term Term -- | Mul Term Term | Div Term Term | Mod Term Term
+data Term = Value NatBin | Add Term Term | Sub Term Term | Mul Term Term | Div Term Term | Mod Term Term
     deriving Show
 
 data MaybeTerm a = JustTerm a | ZeroDivisionErr | NegativeNumberErr | OverflowErr | InvalidNatBinErr
@@ -122,11 +135,7 @@ checkNatBinValue x
     | not (isByteNatBin x) = OverflowErr
     | otherwise = JustTerm (removeLeadingZeros x)
 
--- checkNatBinAdd x
---     | 
-
--- addNatBin m n = if checkNatBinAdd m n then addNatBinAux m n 0 else 
-addNatBin m n = addNatBinAux m n 0
+addNatBin m n = let res = addNatBinAux m n 0 in if isByteNatBin res then JustTerm res else OverflowErr
     where
         addNatBinAux End End 0 = End
         addNatBinAux End End 1 = One End
@@ -147,7 +156,7 @@ addNatBin m n = addNatBinAux m n 0
         addNatBinAux (One x) (One y) 0 = Zero (addNatBinAux x y 1)
         addNatBinAux (One x) (One y) 1 = One (addNatBinAux x y 1)
 
-subNatBin m n = subNatBinAux m n 0
+subNatBin m n = if m >= n then JustTerm (subNatBinAux m n 0) else NegativeNumberErr
     where
         subNatBinAux End End _ = End
         subNatBinAux (Zero x) End 0 = Zero (subNatBinAux x End 0)
@@ -167,22 +176,55 @@ subNatBin m n = subNatBinAux m n 0
         subNatBinAux (One x) (One y) 0 = Zero (subNatBinAux x y 0)
         subNatBinAux (One x) (One y) 1 = One (subNatBinAux x y 1)
 
+mulNatBin m n = mulNatBinAux m n
+    where
+        mulNatBinAux m n
+            | n == zeroNatBin = JustTerm zeroNatBin
+            | otherwise = do nMinusOne <- n `subNatBin` oneNatBin
+                             res <- mulNatBinAux m nMinusOne
+                             m `addNatBin` res
+
+divModNatBin m n = if n /= zeroNatBin then divModNatBinAux m n zeroNatBin else ZeroDivisionErr
+    where
+        divModNatBinAux m n q
+            | m < n = JustTerm (q, m)
+            | otherwise = do mMinusn <- m `subNatBin` n
+                             qPlusOne <- q `addNatBin` oneNatBin
+                             divModNatBinAux mMinusn n qPlusOne
+
 evalTerm :: Term -> MaybeTerm NatBin
 evalTerm (Value x) = checkNatBinValue x
-evalTerm (Sub x y) = do m <- evalTerm x
-                        n <- evalTerm y
-                        JustTerm (subNatBin m n)
 evalTerm (Add x y) = do m <- evalTerm x
                         n <- evalTerm y
-                        let res = m `addNatBin` n in if isByteNatBin res then JustTerm res else OverflowErr
+                        m `addNatBin` n
+evalTerm (Sub x y) = do m <- evalTerm x
+                        n <- evalTerm y
+                        m `subNatBin` n
+evalTerm (Mul x y) = do m <- evalTerm x
+                        n <- evalTerm y
+                        m `mulNatBin` n
+evalTerm (Div x y) = do m <- evalTerm x
+                        n <- evalTerm y
+                        (q, _) <- m `divModNatBin` n
+                        return q
+evalTerm (Mod x y) = do m <- evalTerm x
+                        n <- evalTerm y
+                        (_, r) <- m `divModNatBin` n
+                        return r
 
 main :: IO ()
 -- main = do putStrLn $ show $ "Alessio Bandiera"
 -- main = do putStrLn $ show $ [5, 2] == balancedNodesM (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
--- main = do putStrLn $ show $ visit' (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
--- main = do putStrLn $ show $ and [x + y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Add (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
--- main = do putStrLn $ show $ and [x - y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Sub (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127], x >= y]
-main = do putStrLn $ show $ and [(x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y)) | x <- [0..128], y <- [0..127]]
+-- main = do putStrLn $ show $ and [x + y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Add (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [0..255], x + y <= 255]
+-- main = do putStrLn $ show $ and [x - y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Sub (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [0..255], x >= y]
+-- main = do putStrLn $ show $ and [x * y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Mul (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [0..255], x * y <= 255]
+-- main = do putStrLn $ show $ and [x `div` y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Div (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [1..255]]
+main = do putStrLn $ show $ and [x `mod` y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Mod (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [1..255]]
+-- main = do putStrLn $ show $ takeWhile (\(x, y, d, dn) -> d == dn) [(x, y, x `div` y, fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Div (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [1..255]]
+-- main = do putStrLn $ show $ [(x, y, fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Div (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..2], y <- [1..2]]
+-- main = do putStrLn $ show $ (==) (One (Zero End)) (One End)
+-- main = do putStrLn $ show $ and [(x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y)) | x <- [0..128], y <- [0..127]]
+-- main = do putStrLn $ show $ and [(x == y) == ((fromJust $ intoNatBin x) == (fromJust $ intoNatBin y)) | x <- [0..128], y <- [0..127]]
 -- main = do putStrLn $ show $ find (\(_, _, c) -> c == False) [(x, y, (x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
 -- main = do putStrLn $ show $ find (\(_, _, c) -> c == False) [(x, y, (x == y) == ((fromJust $ intoNatBin x) == (fromJust $ intoNatBin y))) | x <- [0..128], y <- [0..127]]
 -- main = do putStrLn $ show $ removeLeadingZeros $ Zero $ Zero $ Zero $ Zero End
