@@ -11,9 +11,9 @@ import Data.Char (toLower)
 count x = length . filter (x==)
 
 getStrings 0 = return []
-getStrings n = do ss <- getStrings (n - 1)
-                  s <- getLine
-                  return (s : ss)
+getStrings n = do ls <- getStrings (n - 1)
+                  l <- getLine
+                  return (l : ls)
 
 charCount :: IO ()
 charCount = do putStrLn "Insert a positive integer: "
