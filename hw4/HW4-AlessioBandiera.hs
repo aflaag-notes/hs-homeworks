@@ -207,10 +207,10 @@ fromJustTerm InvalidNatBinErr = error "MaybeTerm.fromJustTerm: InvalidNatBinErr"
 fromJustTerm (JustTerm x) = x
 
 checkNatBinValue :: NatBin -> MaybeTerm NatBin
-checkNatBinValue x
-    | isEndNatBin x = InvalidNatBinErr
-    | not (isByteNatBin x) = OverflowErr
-    | otherwise = JustTerm (removeLeadingZeros x)
+checkNatBinValue n
+    | isEndNatBin n = InvalidNatBinErr
+    | not (isByteNatBin n) = OverflowErr
+    | otherwise = JustTerm (removeLeadingZeros n)
 
 addNatBin :: NatBin -> NatBin -> MaybeTerm NatBin
 addNatBin m n = let res = addNatBinAux m n 0 in if isByteNatBin res then JustTerm res else OverflowErr
