@@ -101,6 +101,7 @@ balancedNodesA b = evalState (balancedNodesAAux b) (0, [])
 
 
 -- ### Esercizio 3
+-- il costruttore più esterno è il LSB
 data NatBin = End | Zero NatBin | One NatBin
     deriving Show
 
