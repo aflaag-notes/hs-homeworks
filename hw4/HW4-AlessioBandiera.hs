@@ -4,6 +4,27 @@ import Control.Applicative
 import Data.Function
 import Data.List (find)
 
+import Data.Char (toLower)
+
+-- ### Esercizio 1
+
+count x = length . filter (x==)
+
+getStrings 0 = return []
+getStrings n = do ss <- getStrings (n - 1)
+                  s <- getLine
+                  return (s : ss)
+
+charCount :: IO ()
+charCount = do putStrLn "Insert a positive integer: "
+               input <- getLine
+               let n = read input :: Int
+               putStrLn ("Insert " ++ show n ++ " strings:")
+               strings <- getStrings n
+               let lowerStrings = map (map toLower) strings
+               putStrLn "These are the occurrences of each letter (case-insensitive):"
+               foldr (>>) (return ()) (map (\c -> putStrLn (c:": " ++ show (sum (map (count c) lowerStrings)))) ['a'..'z'])
+
 -- ### Esercizio 2
 data BinTree a = Node a (BinTree a) (BinTree a) | Empty
     deriving Show
@@ -214,12 +235,13 @@ evalTerm (Mod x y) = do m <- evalTerm x
 
 main :: IO ()
 -- main = do putStrLn $ show $ "Alessio Bandiera"
+main = charCount
 -- main = do putStrLn $ show $ [5, 2] == balancedNodesM (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
 -- main = do putStrLn $ show $ and [x + y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Add (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [0..255], x + y <= 255]
 -- main = do putStrLn $ show $ and [x - y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Sub (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [0..255], x >= y]
 -- main = do putStrLn $ show $ and [x * y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Mul (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [0..255], x * y <= 255]
 -- main = do putStrLn $ show $ and [x `div` y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Div (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [1..255]]
-main = do putStrLn $ show $ and [x `mod` y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Mod (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [1..255]]
+-- main = do putStrLn $ show $ and [x `mod` y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Mod (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [1..255]]
 -- main = do putStrLn $ show $ takeWhile (\(x, y, d, dn) -> d == dn) [(x, y, x `div` y, fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Div (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [1..255]]
 -- main = do putStrLn $ show $ [(x, y, fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Div (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..2], y <- [1..2]]
 -- main = do putStrLn $ show $ (==) (One (Zero End)) (One End)
