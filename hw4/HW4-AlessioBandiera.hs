@@ -46,12 +46,12 @@ data BinTree a = Node a (BinTree a) (BinTree a) | Empty
 -- in cui tale codice deve essere scritto con Applicative soltanto. Infatti,
 -- proprio perché quest'idea non può essere scritta senza creare questo tipo
 -- di dipendenze, non è stato possibile scrivere questo algoritmo, ma l'algoritmo
--- seguente invece permette di risolvere l'esercizio senza creare dipendenze:
+-- seguente permette invece di risolvere l'esercizio senza creare dipendenze:
 --   - lo stato dell'algoritmo sarà un (Int, [Int]), dove il primo intero
---     rappresenta il cammino dalla radice al nodo corrente, nodo corrente
---     escluso, mentre la lista rappresenta lo "stack dei totali" dei sottoalberi
+--     rappresenta il cammino dalla radice al nodo corrente (nodo corrente
+--     escluso), mentre la lista rappresenta lo "stack dei totali" dei sottoalberi
 --   - salvare il valore del cammino dalla radice (che esclude il nodo corrente),
---     e ad esso sommargli il valore del nodo corrente (per le chiamate successive)
+--     ed ad esso sommargli il valore del nodo corrente (per le chiamate successive)
 --   - eseguire la ricorsione sul figlio sinistro (per la quale era necessario
 --     aggiungere il valore del nodo corrente all'interno dello stato)
 --   - eseguire la ricorsione sul figlio destro (discorso analogo)
@@ -59,8 +59,8 @@ data BinTree a = Node a (BinTree a) (BinTree a) | Empty
 --     della lista salvata nello stato; allora, è necessario salvarsi `totSum` per
 --     controllare se il nodo è bilanciato, e contemporaneamente
 --       - decrementare il valore del cammino dalla radice (poiché per ritornare al
---         padre il valore del nodo corrente non deve essere incluso, serviva
---         per effettuare le chiamate ricorsive sui figli)
+--         padre il valore del nodo corrente non deve essere incluso, esso serviva
+--         solo per effettuare le chiamate ricorsive sui figli)
 --       - rimpiazzare i primi due elementi della lista nello stato con `totSum`,
 --         poiché questo rappresenta di fatto il totale del sottoalbero corrente,
 --         nodo corrente incluso, da rimandare al padre (infatti le foglie non
@@ -68,7 +68,7 @@ data BinTree a = Node a (BinTree a) (BinTree a) | Empty
 -- Questo algoritmo, poiché mantiene lo "stack dei totali" dei sottoalberi, non
 -- necessita di generare dipendenze del tipo descritto precedentemente, ed è
 -- dunque possibile trasformare il codice scritto con le monadi in un codice
--- che utilizza esclusivamente Applicative
+-- che utilizza esclusivamente Applicative.
 append x = state (\(n, l) -> (n, (n, x : l)))
 fresh a = state (\(n, l) -> (n, (n + a, l)))
 updateList a = state (\(n, l) -> let (fs, rs) = splitAt 2 l
