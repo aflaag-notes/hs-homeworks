@@ -39,6 +39,35 @@ cBinTree* cBinInvocation(int n, int k) {
     return tree;
 }
 
+cBinTree* cBinInvocationSharing(int n, int k) {
+    cBinTree*** T = calloc(n + 1, sizeof(cBinTree**));
+
+    for (int y = 0; y < n + 1; y++) {
+        T[y] = calloc(k + 1, sizeof(cBinTree*));
+
+        for (int x = 0; x < k + 1; x++) {
+            T[y][x] = calloc(1, sizeof(cBinTree));
+
+            if (y >= x) {
+                T[y][x]->n = y;
+                T[y][x]->k = x;
+
+                if (y == x || x == 0) {
+                    printf("%d %d\n", x, y);
+                    T[y][x]->res = 1;
+                } else {
+                    T[y][x]->sx = (struct cBinTree*) T[y - 1][x - 1];
+                    T[y][x]->dx = (struct cBinTree*) T[y - 1][x];
+
+                    T[y][x]->res = ((cBinTree*) T[y][x]->sx)->res + ((cBinTree*) T[y][x]->dx)->res;
+                }
+            }
+        }
+    }
+
+    return T[n][k];
+}
+
 void print_spaces(int amount) {
     for (int i = 0; i < amount; i++) {
         printf("  ");
@@ -46,7 +75,7 @@ void print_spaces(int amount) {
 }
 
 void print_cBinTree_aux(cBinTree* tree, int depth) {
-    printf("(%d, %d, %d)\n", tree->n, tree->k, tree->res);
+    printf("(%d, %d, %d, %p)\n", tree->n, tree->k, tree->res, tree);
 
     if (tree->sx != NULL) {
         print_spaces(depth + 1);
@@ -67,10 +96,13 @@ void print_cBinTree(cBinTree* tree) {
 }
 
 int main() {
-    esercizio1();
+    // esercizio1();
 
-    cBinTree* tree1 = cBinInvocation(5, 3);
-    print_cBinTree(tree1);
+    cBinTree* tree = cBinInvocation(5, 3);
+    print_cBinTree(tree);
+
+    // cBinTree* tree = cBinInvocationSharing(5, 3);
+    // print_cBinTree(tree);
 
     return 0;
 }
