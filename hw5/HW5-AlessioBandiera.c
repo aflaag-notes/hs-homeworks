@@ -53,7 +53,6 @@ cBinTree* cBinInvocationSharing(int n, int k) {
                 T[y][x]->k = x;
 
                 if (y == x || x == 0) {
-                    printf("%d %d\n", x, y);
                     T[y][x]->res = 1;
                 } else {
                     T[y][x]->sx = (struct cBinTree*) T[y - 1][x - 1];
@@ -98,11 +97,11 @@ void print_cBinTree(cBinTree* tree) {
 int main() {
     // esercizio1();
 
-    cBinTree* tree = cBinInvocation(5, 3);
-    print_cBinTree(tree);
-
-    // cBinTree* tree = cBinInvocationSharing(5, 3);
+    // cBinTree* tree = cBinInvocation(5, 3);
     // print_cBinTree(tree);
+
+    cBinTree* tree = cBinInvocationSharing(5, 3);
+    print_cBinTree(tree);
 
     return 0;
 }
