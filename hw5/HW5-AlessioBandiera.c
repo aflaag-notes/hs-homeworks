@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+void print_array(int* arr, int len) {
+    for (int i = 0; i < len; i++) {
+        printf("%02d ", arr[i]);
+    }
+
+    printf("\n");
+}
 
 // ### Eserizio 1
 void endianness() {
@@ -49,7 +56,7 @@ int binary_search_first(int* arr, int len, int target) {
     return result;
 }
 
-void push_duplicates(int* arr, int len) {
+int push_duplicates(int* arr, int len) {
     int sorted_arr[len];
 
     memcpy(sorted_arr, arr, len * sizeof(int));
@@ -93,6 +100,8 @@ void push_duplicates(int* arr, int len) {
     }
 
     memcpy(arr, final, len * sizeof(int));
+
+    return len - n_duplicates;
 }
 
 
@@ -168,25 +177,46 @@ typedef struct {
 Pair* eulerSieve(int n) {
     Pair* succ_prec = calloc(n - 1, sizeof(Pair));
 
+    int pos[n - 1];
+
     for (int i = 0; i < n - 1; i++) {
+        pos[i] = i + 2;
+
         succ_prec[i].fst = 1;
         succ_prec[i].snd = 1;
     }
+    print_array(pos, n - 1);
 
     succ_prec[0].snd = -1;
+
+    for (int i = 0; i < n - 1; i++) {
+        Node* temp = calloc(1, sizeof(int));
+
+        int succ = -1;
+
+        for (j = i; i * j < n - 1; j += succ) {
+            int prod = i * j;
+
+            // temp.append(prod)
+
+            int succ_prod = succ_prec[prod].fst;
+            int prec_prod = succ_prec[prod].snd;
+
+            succ_prec[prod - succ_prod] += succ_prod;
+            succ_prec[prod + prec_prod] += prec_prod;
+
+            succ_prec[prod].fst = -1;
+            succ_prec[prod].snd = -1;
+
+            succ = succ_prec[j].fst;
+        }
+    }
 
     return succ_prec;
 }
 
 
 // Utils
-void print_array(int* arr, int len) {
-    for (int i = 0; i < len; i++) {
-        printf("%d ", arr[i]);
-    }
-
-    printf("\n");
-}
 
 void print_spaces(int amount) {
     for (int i = 0; i < amount; i++) {
@@ -217,9 +247,9 @@ void print_cBinTree(cBinTree* tree) {
 
 void print_pair_value(int value) {
     if (value != -1) {
-        printf("%d ", value);
+        printf("%02d ", value);
     } else {
-        printf("# ");
+        printf("## ");
     }
 }
 
@@ -237,12 +267,14 @@ void print_pairs_array(Pair* pairs_array, int len) {
     printf("\n");
 }
 
+
 int main() {
     // endianness();
 
     // int arr[7] = {5, 4, 5, 3, 5, 2, 3};
-    // push_duplicates(arr, 7);
+    // int rest = push_duplicates(arr, 7);
     // print_array(arr, 7);
+    // printf("%d\n", rest);
 
     // cBinTree* tree = cBinInvocation(5, 3);
     // print_cBinTree(tree);
