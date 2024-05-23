@@ -300,13 +300,4 @@ evalTerm (Mod x y) = do m <- evalTerm x
                         return r
 
 main :: IO ()
--- main = do putStrLn $ show $ "Alessio Bandiera"
-main = charCount
--- main = do putStrLn $ show $ [5, 2] == balancedNodesM (Node 1 (Node 7 (Node 5 (Node 1 Empty Empty) (Node 1 Empty (Node 1 Empty Empty))) Empty) (Node 3 (Node 2 (Node 1 Empty Empty) (Node 1 Empty Empty)) Empty))
--- main = do putStrLn $ show $ and [x + y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Add (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [0..255], x + y <= 255]
--- main = do putStrLn $ show $ and [x - y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Sub (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [0..255], x >= y]
--- main = do putStrLn $ show $ and [x * y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Mul (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [0..255], x * y <= 255]
--- main = do putStrLn $ show $ and [x `div` y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Div (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [1..255]]
--- main = do putStrLn $ show $ and [x `mod` y == (fromJust $ fromNatBin $ fromJustTerm (evalTerm $ Mod (Value $ fromJust $ intoNatBin x) (Value $ fromJust $ intoNatBin y))) | x <- [0..255], y <- [1..255]]
--- main = do putStrLn $ show $ and [(x <= y) == ((fromJust $ intoNatBin x) <= (fromJust $ intoNatBin y)) | x <- [0..128], y <- [0..127]]
--- main = do putStrLn $ show $ and [(x == y) == ((fromJust $ intoNatBin x) == (fromJust $ intoNatBin y)) | x <- [0..128], y <- [0..127]]
+main = do putStrLn $ show $ "Alessio Bandiera"
