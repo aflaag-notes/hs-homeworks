@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-void esercizio1() {
+// ### Eserizio 1
+void endianness() {
     unsigned int x = 1;
     char* first_x = (char*) &x;
 
@@ -13,6 +14,8 @@ void esercizio1() {
     }
 }
 
+
+// ### Esercizio 2
 int compare(const void* a, const void* b) {
     int int_a = *((int*) a);
     int int_b = *((int*) b);
@@ -92,6 +95,8 @@ void push_duplicates(int* arr, int len) {
     memcpy(arr, final, len * sizeof(int));
 }
 
+
+// ### Esercizio 3
 typedef struct {
     int n;
     int k;
@@ -147,6 +152,34 @@ cBinTree* cBinInvocationSharing(int n, int k) {
     return T[n][k];
 }
 
+
+// ### Esercizio 4
+typedef struct {
+    int fst;
+    int snd;
+} Pair;
+
+typedef struct {
+    int value;
+
+    struct Node* next;
+} Node;
+
+Pair* eulerSieve(int n) {
+    Pair* succ_prec = calloc(n - 1, sizeof(Pair));
+
+    for (int i = 0; i < n - 1; i++) {
+        succ_prec[i].fst = 1;
+        succ_prec[i].snd = 1;
+    }
+
+    succ_prec[0].snd = -1;
+
+    return succ_prec;
+}
+
+
+// Utils
 void print_array(int* arr, int len) {
     for (int i = 0; i < len; i++) {
         printf("%d ", arr[i]);
@@ -182,20 +215,43 @@ void print_cBinTree(cBinTree* tree) {
     printf("\n");
 }
 
+void print_pair_value(int value) {
+    if (value != -1) {
+        printf("%d ", value);
+    } else {
+        printf("# ");
+    }
+}
+
+void print_pairs_array(Pair* pairs_array, int len) {
+    for (int i = 0; i < len; i++) {
+        print_pair_value(pairs_array[i].fst);
+    }
+
+    printf("\n");
+
+    for (int i = 0; i < len; i++) {
+        print_pair_value(pairs_array[i].snd);
+    }
+
+    printf("\n");
+}
+
 int main() {
-    // esercizio1();
+    // endianness();
 
-    int arr[7] = {5, 4, 5, 3, 5, 2, 3};
-
-    push_duplicates(arr, 7);
-
-    print_array(arr, 7);
+    // int arr[7] = {5, 4, 5, 3, 5, 2, 3};
+    // push_duplicates(arr, 7);
+    // print_array(arr, 7);
 
     // cBinTree* tree = cBinInvocation(5, 3);
     // print_cBinTree(tree);
 
     // cBinTree* tree = cBinInvocationSharing(5, 3);
     // print_cBinTree(tree);
+
+    Pair* pairs = eulerSieve(24);
+    print_pairs_array(pairs, 23);
 
     return 0;
 }
