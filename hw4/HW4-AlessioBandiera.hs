@@ -13,6 +13,12 @@ getStrings n = do ls <- getStrings (n - 1)
                   l <- getLine
                   return (l : ls)
 
+contains :: Char -> String -> Bool
+contains c = any (\x -> x == c)
+
+done :: IO ()
+done = return ()
+
 charCount :: IO ()
 charCount = do putStrLn "Insert a positive integer: "
                input <- getLine
@@ -21,7 +27,7 @@ charCount = do putStrLn "Insert a positive integer: "
                strings <- getStrings n
                let lowerStrings = map (map toLower) strings
                putStrLn "These are the occurrences of each letter (case-insensitive):"
-               foldr (>>) (return ()) (map (\c -> putStrLn (c:": " ++ show (sum (map (count c) lowerStrings)))) ['a'..'z'])
+               foldr (>>) done (map (\c -> putStrLn (c : ": " ++ show (sum (map (fromEnum . contains c) lowerStrings)))) ['a'..'z'])
 
 
 -- ### Esercizio 2
