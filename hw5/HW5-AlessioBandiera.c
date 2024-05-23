@@ -174,6 +174,16 @@ typedef struct {
     struct Node* next;
 } Node;
 
+Node* append(Node* list, int value) {
+    Node* next = calloc(1, sizeof(Node));
+
+    next.value = value;
+
+    list->next = (struct Node*) next;
+
+    list = list->res;
+}
+
 Pair* eulerSieve(int n) {
     Pair* succ_prec = calloc(n - 1, sizeof(Pair));
 
@@ -189,24 +199,27 @@ Pair* eulerSieve(int n) {
 
     succ_prec[0].snd = -1;
 
-    for (int i = 0; i < n - 1; i++) {
-        Node* temp = calloc(1, sizeof(int));
+    // for (int i = 0; i < n - 1; i++) {
+    for (int i = 0; i < 1; i++) {
+        Node* head = calloc(1, sizeof(int));
+
+        Node* temp = head;
 
         int succ = -1;
 
-        for (j = i; i * j < n - 1; j += succ) {
-            int prod = i * j;
+        for (int j = i; pos[i] * pos[j] < n - 1; j += succ) {
+            int prod = pos[i] * pos[j];
 
-            // temp.append(prod)
+            append(temp, prod);
 
-            int succ_prod = succ_prec[prod].fst;
-            int prec_prod = succ_prec[prod].snd;
-
-            succ_prec[prod - succ_prod] += succ_prod;
-            succ_prec[prod + prec_prod] += prec_prod;
-
-            succ_prec[prod].fst = -1;
-            succ_prec[prod].snd = -1;
+            // int succ_prod = succ_prec[prod].fst;
+            // int prec_prod = succ_prec[prod].snd;
+            //
+            // succ_prec[prod - succ_prod].fst += succ_prod;
+            // succ_prec[prod + prec_prod].snd += prec_prod;
+            //
+            // succ_prec[prod].fst = -1;
+            // succ_prec[prod].snd = -1;
 
             succ = succ_prec[j].fst;
         }
