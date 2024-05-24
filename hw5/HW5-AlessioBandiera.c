@@ -1,13 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-void print_array(int* arr, int len) {
-    for (int i = 0; i < len; i++) {
-        printf("%02d ", arr[i]);
-    }
-
-    printf("\n");
-}
+#include <stdbool.h>
 
 // ### Eserizio 1
 void endianness() {
@@ -174,14 +168,12 @@ typedef struct {
     struct Node* next;
 } Node;
 
-Node* append(Node* list, int value) {
+void append(Node* list, int value) {
     Node* next = calloc(1, sizeof(Node));
 
-    next.value = value;
+    next->value = value;
 
     list->next = (struct Node*) next;
-
-    list = list->res;
 }
 
 Pair* eulerSieve(int n) {
@@ -195,34 +187,47 @@ Pair* eulerSieve(int n) {
         succ_prec[i].fst = 1;
         succ_prec[i].snd = 1;
     }
-    print_array(pos, n - 1);
 
     succ_prec[0].snd = -1;
 
-    // for (int i = 0; i < n - 1; i++) {
-    for (int i = 0; i < 1; i++) {
+    int i = 0;
+
+    while ((i + 2) * (i + 2) <= n) {
         Node* head = calloc(1, sizeof(int));
 
-        Node* temp = head;
+        Node* curr = head;
 
-        int succ = -1;
+        int j = i;
+        int prod = pos[i] * pos[j];
 
-        for (int j = i; pos[i] * pos[j] < n - 1; j += succ) {
-            int prod = pos[i] * pos[j];
-
-            append(temp, prod);
-
-            // int succ_prod = succ_prec[prod].fst;
-            // int prec_prod = succ_prec[prod].snd;
-            //
-            // succ_prec[prod - succ_prod].fst += succ_prod;
-            // succ_prec[prod + prec_prod].snd += prec_prod;
-            //
-            // succ_prec[prod].fst = -1;
-            // succ_prec[prod].snd = -1;
-
-            succ = succ_prec[j].fst;
+        while (prod <= n) {
+            append(curr, prod);
+            curr = (Node*) curr->next;
+ 
+            j += succ_prec[j].fst;
+            prod = pos[i] * pos[j];
         }
+
+        curr = (Node*) head->next;
+
+        while (curr != NULL) {
+            int prod = curr->value - 2;
+
+            int succ_prod = succ_prec[prod].fst;
+            int prec_prod = succ_prec[prod].snd;
+
+            succ_prec[prod - prec_prod].fst += succ_prod;
+            succ_prec[prod + succ_prod].snd += prec_prod;
+
+            succ_prec[prod].fst = -1;
+            succ_prec[prod].snd = -1;
+
+            curr = (Node*) curr->next;
+        }
+
+        // TODO: free list
+
+        i += succ_prec[i].fst;
     }
 
     return succ_prec;
@@ -230,7 +235,6 @@ Pair* eulerSieve(int n) {
 
 
 // Utils
-
 void print_spaces(int amount) {
     for (int i = 0; i < amount; i++) {
         printf("  ");
@@ -280,6 +284,75 @@ void print_pairs_array(Pair* pairs_array, int len) {
     printf("\n");
 }
 
+bool check_pairs_array(Pair* pairs_array, int len) {
+    for (int i = 1; i < len; i++) {
+        int fst = pairs_array[i].fst;
+        int snd = pairs_array[i].snd;
+        
+        if ((fst == -1 && snd != -1) || (fst != -1 && snd == -1)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool is_prime(int n) {
+    if (n < 2) {
+        return false;
+    }
+
+    for (int i = 2; i * i <= n; i++) {
+        if (n % i == 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool check_primes(Pair* pairs_array, int len) {
+    for (int i = 0; i < len; i++) {
+        if (pairs_array[i].fst != -1) {
+            if (!is_prime(i + 2)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void printPrimes(Pair* pairs_array, int len) {
+    for (int i = 0; i < len; i++) {
+        if (pairs_array[i].fst != -1) {
+            printf("%d ", i + 2);
+        }
+    }
+
+    printf("\n");
+}
+
+void print_list(Node* list) {
+    Node* curr = list;
+
+    while (curr != NULL) {
+        printf("%02d ", curr->value);
+
+        curr = (Node*) curr->next;
+    }
+
+    printf("\n");
+}
+
+void print_array(int* arr, int len) {
+    for (int i = 0; i < len; i++) {
+        printf("%02d ", arr[i]);
+    }
+
+    printf("\n");
+}
+
 
 int main() {
     // endianness();
@@ -289,14 +362,19 @@ int main() {
     // print_array(arr, 7);
     // printf("%d\n", rest);
 
+    // TODO: free everything
     // cBinTree* tree = cBinInvocation(5, 3);
     // print_cBinTree(tree);
 
+    // TODO: free everything
     // cBinTree* tree = cBinInvocationSharing(5, 3);
     // print_cBinTree(tree);
 
-    Pair* pairs = eulerSieve(24);
-    print_pairs_array(pairs, 23);
+    int n = 1000;
+    Pair* pairs = eulerSieve(n);
+    printPrimes(pairs, n - 1);
+    printf("%d\n", check_pairs_array(pairs, n - 1));
+    printf("%d\n", check_primes(pairs, n - 1));
 
     return 0;
 }
