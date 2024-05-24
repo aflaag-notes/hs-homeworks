@@ -179,16 +179,14 @@ void append(Node* list, int value) {
 Pair* eulerSieve(int n) {
     Pair* succ_prec = calloc(n - 1, sizeof(Pair));
 
-    int pos[n - 1];
-
     for (int i = 0; i < n - 1; i++) {
-        pos[i] = i + 2;
+        // pos[i] = i + 2;
 
         succ_prec[i].fst = 1;
         succ_prec[i].snd = 1;
     }
 
-    succ_prec[0].snd = -1;
+    succ_prec[0].snd = 0;
 
     int i = 0;
 
@@ -198,14 +196,14 @@ Pair* eulerSieve(int n) {
         Node* curr = head;
 
         int j = i;
-        int prod = pos[i] * pos[j];
+        int prod = (i + 2) * (j + 2);
 
         while (prod <= n) {
             append(curr, prod);
             curr = (Node*) curr->next;
  
             j += succ_prec[j].fst;
-            prod = pos[i] * pos[j];
+            prod = (i + 2) * (j + 2);
         }
 
         curr = (Node*) head->next;
@@ -219,13 +217,11 @@ Pair* eulerSieve(int n) {
             succ_prec[prod - prec_prod].fst += succ_prod;
             succ_prec[prod + succ_prod].snd += prec_prod;
 
-            succ_prec[prod].fst = -1;
-            succ_prec[prod].snd = -1;
+            succ_prec[prod].fst = 0;
+            succ_prec[prod].snd = 0;
 
             curr = (Node*) curr->next;
         }
-
-        // TODO: free list
 
         i += succ_prec[i].fst;
     }
@@ -263,7 +259,7 @@ void print_cBinTree(cBinTree* tree) {
 }
 
 void print_pair_value(int value) {
-    if (value != -1) {
+    if (value != 0) {
         printf("%02d ", value);
     } else {
         printf("## ");
@@ -289,7 +285,7 @@ bool check_pairs_array(Pair* pairs_array, int len) {
         int fst = pairs_array[i].fst;
         int snd = pairs_array[i].snd;
         
-        if ((fst == -1 && snd != -1) || (fst != -1 && snd == -1)) {
+        if ((fst == 0 && snd != 0) || (fst != 0 && snd == 0)) {
             return false;
         }
     }
@@ -313,7 +309,7 @@ bool is_prime(int n) {
 
 bool check_primes(Pair* pairs_array, int len) {
     for (int i = 0; i < len; i++) {
-        if (pairs_array[i].fst != -1) {
+        if (pairs_array[i].fst != 0) {
             if (!is_prime(i + 2)) {
                 return false;
             }
@@ -325,7 +321,7 @@ bool check_primes(Pair* pairs_array, int len) {
 
 void printPrimes(Pair* pairs_array, int len) {
     for (int i = 0; i < len; i++) {
-        if (pairs_array[i].fst != -1) {
+        if (pairs_array[i].fst != 0) {
             printf("%d ", i + 2);
         }
     }
