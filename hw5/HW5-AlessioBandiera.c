@@ -162,20 +162,6 @@ typedef struct {
     int snd;
 } Pair;
 
-typedef struct {
-    int value;
-
-    struct Node* next;
-} Node;
-
-void append(Node* list, int value) {
-    Node* next = calloc(1, sizeof(Node));
-
-    next->value = value;
-
-    list->next = (struct Node*) next;
-}
-
 int abs(int x) {
     return x >= 0 ? x : -x;
 }
@@ -333,18 +319,6 @@ void printPrimes(Pair* pairs_array, int len) {
         if (pairs_array[i].fst != 0) {
             printf("%d ", i + 2);
         }
-    }
-
-    printf("\n");
-}
-
-void print_list(Node* list) {
-    Node* curr = list;
-
-    while (curr != NULL) {
-        printf("%02d ", curr->value);
-
-        curr = (Node*) curr->next;
     }
 
     printf("\n");
