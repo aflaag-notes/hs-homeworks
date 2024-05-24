@@ -3,6 +3,14 @@
 #include <string.h>
 #include <stdbool.h>
 
+void print_array(int* arr, int len) {
+    for (int i = 0; i < len; i++) {
+        printf("%02d ", arr[i]);
+    }
+
+    printf("\n");
+}
+
 // ### Eserizio 1
 void endianness() {
     unsigned int x = 1;
@@ -176,12 +184,14 @@ void append(Node* list, int value) {
     list->next = (struct Node*) next;
 }
 
+int abs(int x) {
+    return x >= 0 ? x : -x;
+}
+
 Pair* eulerSieve(int n) {
     Pair* succ_prec = calloc(n - 1, sizeof(Pair));
 
     for (int i = 0; i < n - 1; i++) {
-        // pos[i] = i + 2;
-
         succ_prec[i].fst = 1;
         succ_prec[i].snd = 1;
     }
@@ -190,41 +200,88 @@ Pair* eulerSieve(int n) {
 
     int i = 0;
 
+    int pos[n - 1];
+    for (int k = 0; k < n - 1; k++) { pos[k] = k + 2; }
+    print_array(pos, n - 1);
+
     while ((i + 2) * (i + 2) <= n) {
-        Node* head = calloc(1, sizeof(int));
-
-        Node* curr = head;
-
         int j = i;
         int prod = (i + 2) * (j + 2);
 
+        // printf("test");
         while (prod <= n) {
-            append(curr, prod);
-            curr = (Node*) curr->next;
- 
-            j += succ_prec[j].fst;
+            // printf("%d ", prod);
+            // // int succ_prod = abs(succ_prec[prod].fst);
+            // int prec_prod = abs(succ_prec[prod].snd);
+
+            // TODO check forse va fatto solo se già non è negativo? prob non serve
+            succ_prec[prod - 2].fst = -succ_prec[prod - 2].fst;
+            succ_prec[prod - 2].snd = -succ_prec[prod - 2].snd;
+
+            j += abs(succ_prec[j].fst);
             prod = (i + 2) * (j + 2);
         }
+        // printf("\n");
 
-        curr = (Node*) head->next;
 
-        while (curr != NULL) {
-            int prod = curr->value - 2;
+        // j = succ_prec[i].fst;
+        j = 0;
+        //
+        while (j < n - 1) {
+            // printf("test");
+            int succ_prod = succ_prec[j].fst;
+            int prec_prod = succ_prec[j].snd;
 
-            int succ_prod = succ_prec[prod].fst;
-            int prec_prod = succ_prec[prod].snd;
+            if (succ_prod < 0) {
+                // printf("%d %d\n", j + 2, succ_prod);
+                succ_prec[j + prec_prod].fst -= succ_prod;
+                succ_prec[j - succ_prod].snd -= prec_prod;
 
-            succ_prec[prod - prec_prod].fst += succ_prod;
-            succ_prec[prod + succ_prod].snd += prec_prod;
-
-            succ_prec[prod].fst = 0;
-            succ_prec[prod].snd = 0;
-
-            curr = (Node*) curr->next;
+                succ_prec[j].fst = 0;
+                succ_prec[j].snd = 0;
+            }
+            
+            j += 1;
         }
 
         i += succ_prec[i].fst;
     }
+
+ //    while ((i + 2) * (i + 2) <= n) {
+ //        Node* head = calloc(1, sizeof(int));
+ //
+ //        Node* curr = head;
+ //
+ //        int j = i;
+ //        int prod = (i + 2) * (j + 2);
+ //
+ //        while (prod <= n) {
+ //            append(curr, prod);
+ //            curr = (Node*) curr->next;
+ // 
+ //            j += succ_prec[j].fst;
+ //            prod = (i + 2) * (j + 2);
+ //        }
+ //
+ //        curr = (Node*) head->next;
+ //
+ //        while (curr != NULL) {
+ //            int prod = curr->value - 2;
+ //
+ //            int succ_prod = succ_prec[prod].fst;
+ //            int prec_prod = succ_prec[prod].snd;
+ //
+ //            succ_prec[prod - prec_prod].fst += succ_prod;
+ //            succ_prec[prod + succ_prod].snd += prec_prod;
+ //
+ //            succ_prec[prod].fst = 0;
+ //            succ_prec[prod].snd = 0;
+ //
+ //            curr = (Node*) curr->next;
+ //        }
+ //
+ //        i += succ_prec[i].fst;
+ //    }
 
     return succ_prec;
 }
@@ -341,13 +398,6 @@ void print_list(Node* list) {
     printf("\n");
 }
 
-void print_array(int* arr, int len) {
-    for (int i = 0; i < len; i++) {
-        printf("%02d ", arr[i]);
-    }
-
-    printf("\n");
-}
 
 
 int main() {
@@ -368,6 +418,7 @@ int main() {
 
     int n = 1000;
     Pair* pairs = eulerSieve(n);
+    // print_pairs_array(pairs, n - 1);
     printPrimes(pairs, n - 1);
     printf("%d\n", check_pairs_array(pairs, n - 1));
     printf("%d\n", check_primes(pairs, n - 1));
