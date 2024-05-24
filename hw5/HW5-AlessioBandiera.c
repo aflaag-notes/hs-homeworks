@@ -3,14 +3,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-void print_array(int* arr, int len) {
-    for (int i = 0; i < len; i++) {
-        printf("%02d ", arr[i]);
-    }
-
-    printf("\n");
-}
-
 // ### Eserizio 1
 void endianness() {
     unsigned int x = 1;
@@ -191,6 +183,10 @@ int abs(int x) {
 Pair* eulerSieve(int n) {
     Pair* succ_prec = calloc(n - 1, sizeof(Pair));
 
+    if (succ_prec == NULL) {
+        return NULL;
+    }
+
     for (int i = 0; i < n - 1; i++) {
         succ_prec[i].fst = 1;
         succ_prec[i].snd = 1;
@@ -200,94 +196,50 @@ Pair* eulerSieve(int n) {
 
     int i = 0;
 
-    int pos[n - 1];
-    for (int k = 0; k < n - 1; k++) { pos[k] = k + 2; }
-    print_array(pos, n - 1);
-
     while ((i + 2) * (i + 2) <= n) {
         int j = i;
         int prod = (i + 2) * (j + 2);
 
-        // printf("test");
         while (prod <= n) {
-            // printf("%d ", prod);
-            // // int succ_prod = abs(succ_prec[prod].fst);
-            // int prec_prod = abs(succ_prec[prod].snd);
-
-            // TODO check forse va fatto solo se già non è negativo? prob non serve
             succ_prec[prod - 2].fst = -succ_prec[prod - 2].fst;
             succ_prec[prod - 2].snd = -succ_prec[prod - 2].snd;
 
             j += abs(succ_prec[j].fst);
             prod = (i + 2) * (j + 2);
         }
-        // printf("\n");
 
-
-        // j = succ_prec[i].fst;
-        j = 0;
-        //
-        while (j < n - 1) {
-            // printf("test");
-            int succ_prod = succ_prec[j].fst;
-            int prec_prod = succ_prec[j].snd;
+        for (int k = 0; k < n - 1; k++) {
+            int succ_prod = succ_prec[k].fst;
+            int prec_prod = succ_prec[k].snd;
 
             if (succ_prod < 0) {
-                // printf("%d %d\n", j + 2, succ_prod);
-                succ_prec[j + prec_prod].fst -= succ_prod;
-                succ_prec[j - succ_prod].snd -= prec_prod;
+                succ_prec[k + prec_prod].fst -= succ_prod;
 
-                succ_prec[j].fst = 0;
-                succ_prec[j].snd = 0;
+                if (k - succ_prod < n - 1) {
+                    succ_prec[k - succ_prod].snd -= prec_prod;
+                }
+
+                succ_prec[k].fst = 0;
+                succ_prec[k].snd = 0;
             }
-            
-            j += 1;
         }
 
         i += succ_prec[i].fst;
     }
-
- //    while ((i + 2) * (i + 2) <= n) {
- //        Node* head = calloc(1, sizeof(int));
- //
- //        Node* curr = head;
- //
- //        int j = i;
- //        int prod = (i + 2) * (j + 2);
- //
- //        while (prod <= n) {
- //            append(curr, prod);
- //            curr = (Node*) curr->next;
- // 
- //            j += succ_prec[j].fst;
- //            prod = (i + 2) * (j + 2);
- //        }
- //
- //        curr = (Node*) head->next;
- //
- //        while (curr != NULL) {
- //            int prod = curr->value - 2;
- //
- //            int succ_prod = succ_prec[prod].fst;
- //            int prec_prod = succ_prec[prod].snd;
- //
- //            succ_prec[prod - prec_prod].fst += succ_prod;
- //            succ_prec[prod + succ_prod].snd += prec_prod;
- //
- //            succ_prec[prod].fst = 0;
- //            succ_prec[prod].snd = 0;
- //
- //            curr = (Node*) curr->next;
- //        }
- //
- //        i += succ_prec[i].fst;
- //    }
 
     return succ_prec;
 }
 
 
 // Utils
+void print_array(int* arr, int len) {
+    for (int i = 0; i < len; i++) {
+        printf("%02d ", arr[i]);
+    }
+
+    printf("\n");
+}
+
 void print_spaces(int amount) {
     for (int i = 0; i < amount; i++) {
         printf("  ");
@@ -342,7 +294,7 @@ bool check_pairs_array(Pair* pairs_array, int len) {
         int fst = pairs_array[i].fst;
         int snd = pairs_array[i].snd;
         
-        if ((fst == 0 && snd != 0) || (fst != 0 && snd == 0)) {
+        if ((fst == 0 && snd != 0) || (fst != 0 && snd == 0) || fst < 0 || snd < 0) {
             return false;
         }
     }
@@ -397,7 +349,6 @@ void print_list(Node* list) {
 
     printf("\n");
 }
-
 
 
 int main() {
