@@ -155,15 +155,24 @@ cBinTree* cBinInvocationSharing(int n, int k) {
     return T[n][k];
 }
 
-
 // ### Esercizio 4
 typedef struct {
     int fst;
     int snd;
 } Pair;
 
-int abs(int x) {
-    return x >= 0 ? x : -x;
+typedef struct {
+    int value;
+
+    struct Node* next;
+} Node;
+
+void append(Node* list, int value) {
+    Node* next = calloc(1, sizeof(Node));
+
+    next->value = value;
+
+    list->next = (struct Node*) next;
 }
 
 Pair* eulerSieve(int n) {
@@ -183,37 +192,55 @@ Pair* eulerSieve(int n) {
     int i = 0;
 
     while ((i + 2) * (i + 2) <= n) {
+        Node* head = calloc(1, sizeof(int));
+
+        // if (head == NULL) {
+        // }
+
+        Node* curr = head;
+
         int j = i;
         int prod = (i + 2) * (j + 2);
 
         while (prod <= n) {
-            succ_prec[prod - 2].fst = -succ_prec[prod - 2].fst;
-            succ_prec[prod - 2].snd = -succ_prec[prod - 2].snd;
-
-            j += abs(succ_prec[j].fst);
+            append(curr, prod);
+            curr = (Node*) curr->next;
+ 
+            j += succ_prec[j].fst;
             prod = (i + 2) * (j + 2);
         }
 
-        for (int k = 0; k < n - 1; k++) {
-            int succ_prod = succ_prec[k].fst;
-            int prec_prod = succ_prec[k].snd;
+        curr = (Node*) head->next;
 
-            if (succ_prod < 0) {
-                succ_prec[k + prec_prod].fst -= succ_prod;
+        while (curr != NULL) {
+            int prod = curr->value - 2;
 
-                if (k - succ_prod < n - 1) {
-                    succ_prec[k - succ_prod].snd -= prec_prod;
-                }
+            int succ_prod = succ_prec[prod].fst;
+            int prec_prod = succ_prec[prod].snd;
 
-                succ_prec[k].fst = 0;
-                succ_prec[k].snd = 0;
-            }
+            succ_prec[prod - prec_prod].fst += succ_prod;
+            succ_prec[prod + succ_prod].snd += prec_prod;
+
+            succ_prec[prod].fst = 0;
+            succ_prec[prod].snd = 0;
+
+            curr = (Node*) curr->next;
         }
 
         i += succ_prec[i].fst;
     }
 
     return succ_prec;
+}
+
+void printPrimes(Pair* pairs_array, int len) {
+    for (int i = 0; i < len; i++) {
+        if (pairs_array[i].fst != 0) {
+            printf("%d ", i + 2);
+        }
+    }
+
+    printf("\n");
 }
 
 
@@ -280,7 +307,7 @@ bool check_pairs_array(Pair* pairs_array, int len) {
         int fst = pairs_array[i].fst;
         int snd = pairs_array[i].snd;
         
-        if ((fst == 0 && snd != 0) || (fst != 0 && snd == 0) || fst < 0 || snd < 0) {
+        if ((fst == 0 && snd != 0) || (fst != 0 && snd == 0)) {
             return false;
         }
     }
@@ -314,11 +341,13 @@ bool check_primes(Pair* pairs_array, int len) {
     return true;
 }
 
-void printPrimes(Pair* pairs_array, int len) {
-    for (int i = 0; i < len; i++) {
-        if (pairs_array[i].fst != 0) {
-            printf("%d ", i + 2);
-        }
+void print_list(Node* list) {
+    Node* curr = list;
+
+    while (curr != NULL) {
+        printf("%02d ", curr->value);
+
+        curr = (Node*) curr->next;
     }
 
     printf("\n");
