@@ -109,8 +109,21 @@ typedef struct {
     struct cBinTree* dx;
 } cBinTree;
 
+void free_tree(cBinTree* tree) {
+    if (tree != NULL) {
+        free_tree((cBinTree*) tree->sx);
+        free_tree((cBinTree*) tree->dx);
+
+        free(tree);
+    }
+}
+
 cBinTree* cBinInvocation(int n, int k) {
     cBinTree* tree = calloc(1, sizeof(cBinTree));
+
+    if (tree == NULL) {
+        return NULL;
+    }
 
     tree->n = n;
     tree->k = k;
@@ -118,8 +131,23 @@ cBinTree* cBinInvocation(int n, int k) {
     if (n == k || k == 0) {
         tree->res = 1;
     } else {
-        tree->sx = (struct cBinTree*) cBinInvocation(n - 1, k - 1);
-        tree->dx = (struct cBinTree*) cBinInvocation(n - 1, k);
+        cBinTree* sx = cBinInvocation(n - 1, k - 1);
+
+        if (sx == NULL) {
+            free(tree);
+            return NULL;
+        }
+
+        cBinTree* dx = cBinInvocation(n - 1, k);
+
+        if (dx == NULL) {
+            free_tree(sx);
+            free(tree);
+            return NULL;
+        }
+
+        tree->sx = (struct cBinTree*) sx;
+        tree->dx = (struct cBinTree*) dx;
 
         tree->res = ((cBinTree*) tree->sx)->res + ((cBinTree*) tree->dx)->res;
     }
@@ -127,7 +155,7 @@ cBinTree* cBinInvocation(int n, int k) {
     return tree;
 }
 
-cBinTree* cBinInvocationSharing(int n, int k) {
+cBinTree*** cBinInvocationSharing(int n, int k) {
     cBinTree*** T = calloc(n + 1, sizeof(cBinTree**));
 
     for (int y = 0; y < n + 1; y++) {
@@ -152,8 +180,21 @@ cBinTree* cBinInvocationSharing(int n, int k) {
         }
     }
 
+    return T;
+}
+
+cBinTree* get_tree(cBinTree*** T, int n, int k) {
     return T[n][k];
 }
+
+void free_matrix(cBinTree*** matrix, int n, int k) {
+    for (int y = 0; y < n + 1; y++) {
+        for (int x = 0; x < k + 1; x++) {
+            free(matrix[y][x]);
+        }
+    }
+}
+
 
 // ### Esercizio 4
 typedef struct {
@@ -167,12 +208,48 @@ typedef struct {
     struct Node* next;
 } Node;
 
-void append(Node* list, int value) {
+int append(Node* list, int value) {
     Node* next = calloc(1, sizeof(Node));
+
+    if (next == NULL) {
+        return -1;
+    }
 
     next->value = value;
 
     list->next = (struct Node*) next;
+
+    return 0;
+}
+
+void free_list(Node* list) {
+    Node* curr = (Node*) list;
+
+    while (curr != NULL) {
+        // printf("freeing\n");
+        Node* next = (Node*) curr->next;
+        // printf("%p %p\n", curr, next);
+
+        free(curr);
+
+
+        curr = next;
+    }
+
+
+    // curr = (Node*) list->next;
+    // curr = (Node*) curr->next;
+
+    list->next;
+
+    // if (list == NULL) {
+    // if (curr->next == NULL) {
+    //     printf("freed\n");
+    // } else {
+    //     printf("not freed\n");
+    // }
+
+    exit(-1);
 }
 
 Pair* eulerSieve(int n) {
@@ -194,8 +271,10 @@ Pair* eulerSieve(int n) {
     while ((i + 2) * (i + 2) <= n) {
         Node* head = calloc(1, sizeof(int));
 
-        // if (head == NULL) {
-        // }
+        if (head == NULL) {
+            free(succ_prec);
+            return NULL;
+        }
 
         Node* curr = head;
 
@@ -203,7 +282,11 @@ Pair* eulerSieve(int n) {
         int prod = (i + 2) * (j + 2);
 
         while (prod <= n) {
-            append(curr, prod);
+            if (append(curr, prod) == -1) {
+                free_list((Node*) head);
+                return NULL;
+            }
+
             curr = (Node*) curr->next;
  
             j += succ_prec[j].fst;
@@ -227,8 +310,18 @@ Pair* eulerSieve(int n) {
             curr = (Node*) curr->next;
         }
 
+        free_list((Node*) head);
+
+        if (head == NULL) {
+        // if (head->next == NULL) {
+            printf("freed\n");
+        } else {
+            printf("not freed\n");
+        }
+
         i += succ_prec[i].fst;
     }
+
 
     return succ_prec;
 }
@@ -362,20 +455,28 @@ int main() {
     // print_array(arr, 7);
     // printf("%d\n", rest);
 
-    // TODO: free everything
     // cBinTree* tree = cBinInvocation(5, 3);
-    // print_cBinTree(tree);
+    // if (tree != NULL) {
+    //     print_cBinTree(tree);
+    //     free_tree(tree);
+    // }
 
-    // TODO: free everything
-    // cBinTree* tree = cBinInvocationSharing(5, 3);
-    // print_cBinTree(tree);
+    // int n = 5;
+    // int k = 3;
+    // cBinTree*** matrix = cBinInvocationSharing(n, k);
+    // if (matrix != NULL) {
+    //     cBinTree* tree = get_tree(matrix, n, k);
+    //     print_cBinTree(tree);
+    //     free_matrix(matrix, n, k);
+    // }
 
-    int n = 1000;
-    Pair* pairs = eulerSieve(n);
-    // print_pairs_array(pairs, n - 1);
-    printPrimes(pairs, n - 1);
-    printf("%d\n", check_pairs_array(pairs, n - 1));
-    printf("%d\n", check_primes(pairs, n - 1));
+    int m = 1000;
+    Pair* pairs = eulerSieve(m);
+    if (pairs != NULL) {
+        printPrimes(pairs, m - 1);
+        printf("%d\n", check_pairs_array(pairs, m - 1));
+        printf("%d\n", check_primes(pairs, m - 1));
+    }
 
     return 0;
 }
