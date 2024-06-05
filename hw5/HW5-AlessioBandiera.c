@@ -55,6 +55,7 @@ int binary_search_first(int* arr, int len, int target) {
 
     int left = 0;
     int right = len - 1;
+
     int result = -1;
 
     while (left <= right) {
@@ -316,25 +317,10 @@ void free_list(Node* list) {
 
         free(curr);
 
-
         curr = next;
     }
-
-
-    // curr = (Node*) list->next;
-    // curr = (Node*) curr->next;
-
-    list->next;
-
-    // if (list == NULL) {
-    // if (curr->next == NULL) {
-    //     printf("freed\n");
-    // } else {
-    //     printf("not freed\n");
-    // }
-
-    exit(-1);
 }
+
 
 Pair* eulerSieve(int n) {
     /*
@@ -400,14 +386,7 @@ Pair* eulerSieve(int n) {
             curr = (Node*) curr->next;
         }
 
-        free_list((Node*) head);
-
-        if (head == NULL) {
-        // if (head->next == NULL) {
-            printf("freed\n");
-        } else {
-            printf("not freed\n");
-        }
+        free_list((Node*) head->next);
 
         i += succ_prec[i].fst;
     }
@@ -608,6 +587,8 @@ void print_list(Node* list) {
 
 
 int main() {
+    printf("Alessio Bandiera 1985878");
+
     // ### Esercizio 1
     // endianness();
 
@@ -629,19 +610,19 @@ int main() {
     // int k = 3;
     // cBinTree*** matrix = cBinInvocationSharing(n, k);
     // if (matrix != NULL) {
-    //     cBinTree* tree = get_tree(matrix, n, k);
-    //     print_cBinTree(tree);
+    //     cBinTree* tree_no_dups = get_tree(matrix, n, k);
+    //     print_cBinTree(tree_no_dups);
     //     free_matrix(matrix, n, k);
     // }
 
     // ### Esercizio 4
-    int m = 1000;
-    Pair* pairs = eulerSieve(m);
-    if (pairs != NULL) {
-        printPrimes(pairs, m - 1);
-        printf("%d\n", check_pairs_array(pairs, m - 1));
-        printf("%d\n", check_primes(pairs, m - 1));
-    }
+    // int m = 1000;
+    // Pair* pairs = eulerSieve(m);
+    // if (pairs != NULL) {
+    //     printPrimes(pairs, m - 1);
+    //     printf("%d\n", check_pairs_array(pairs, m - 1));
+    //     printf("%d\n", check_primes(pairs, m - 1));
+    // }
 
     return 0;
 }
