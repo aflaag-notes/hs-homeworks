@@ -48,7 +48,7 @@ int binary_search_first(int* arr, int len, int target) {
     /*
         REQ: arr è ordinato;
              len è la lunghezza di arr;
-        ENS: se target, è in arr, ritorna il più piccolo i tale che arr[i] = target;
+        ENS: se target è in arr, ritorna il più piccolo i tale che arr[i] = target;
              se target non è in arr, ritorna -1;
         MOD: -
     */
