@@ -194,7 +194,7 @@ cBinTree* cBinInvocation(int n, int k) {
         tree->sx = (struct cBinTree*) sx;
         tree->dx = (struct cBinTree*) dx;
 
-        tree->res = ((cBinTree*) tree->sx)->res + ((cBinTree*) tree->dx)->res;
+        tree->res = sx->res + dx->res;
     }
 
     return tree;
@@ -587,42 +587,7 @@ void print_list(Node* list) {
 
 
 int main() {
-    printf("Alessio Bandiera 1985878");
-
-    // ### Esercizio 1
-    // endianness();
-
-    // ### Esercizio 2
-    // int arr[7] = {5, 4, 5, 3, 5, 2, 3};
-    // int rest = push_duplicates(arr, 7);
-    // print_array(arr, 7);
-    // printf("%d\n", rest);
-
-    // ### Esercizio 3.1
-    // cBinTree* tree = cBinInvocation(5, 3);
-    // if (tree != NULL) {
-    //     print_cBinTree(tree);
-    //     free_tree(tree);
-    // }
-
-    // ### Esercizio 3.2
-    // int n = 5;
-    // int k = 3;
-    // cBinTree*** matrix = cBinInvocationSharing(n, k);
-    // if (matrix != NULL) {
-    //     cBinTree* tree_no_dups = get_tree(matrix, n, k);
-    //     print_cBinTree(tree_no_dups);
-    //     free_matrix(matrix, n, k);
-    // }
-
-    // ### Esercizio 4
-    // int m = 1000;
-    // Pair* pairs = eulerSieve(m);
-    // if (pairs != NULL) {
-    //     printPrimes(pairs, m - 1);
-    //     printf("%d\n", check_pairs_array(pairs, m - 1));
-    //     printf("%d\n", check_primes(pairs, m - 1));
-    // }
+    printf("Alessio Bandiera 1985878\n");
 
     return 0;
 }
