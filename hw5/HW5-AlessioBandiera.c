@@ -5,6 +5,12 @@
 
 // ### Eserizio 1
 void endianness() {
+    /*
+        REQ: -
+        ENS: -
+        MOD: -
+    */
+    
     unsigned int x = 1;
     char* first_x = (char*) &x;
 
@@ -18,6 +24,14 @@ void endianness() {
 
 // ### Esercizio 2
 int compare(const void* a, const void* b) {
+    /*
+        REQ: a and b castabili ad int;
+        ENS: se a == b ritorna 0;
+             se a < b ritorna -1;
+             se a > b ritorna 1;
+        MOD: -
+    */
+
     int int_a = *((int*) a);
     int int_b = *((int*) b);
 
@@ -31,14 +45,24 @@ int compare(const void* a, const void* b) {
 }
 
 int binary_search_first(int* arr, int len, int target) {
+    /*
+        REQ: arr è ordinato;
+             len è la lunghezza di arr;
+        ENS: se target, è in arr, ritorna il più piccolo i tale che arr[i] = target;
+             se target non è in arr, ritorna -1;
+        MOD: -
+    */
+
     int left = 0;
     int right = len - 1;
     int result = -1;
 
     while (left <= right) {
         int mid = left + (right - left) / 2;
+
         if (arr[mid] == target) {
             result = mid;
+
             right = mid - 1; 
         } else if (arr[mid] < target) {
             left = mid + 1;
@@ -51,6 +75,13 @@ int binary_search_first(int* arr, int len, int target) {
 }
 
 int push_duplicates(int* arr, int len) {
+    /*
+        REQ: len è la lunghezza di arr;
+        ENS: ritorna il numero di elementi senza duplicati di arr;
+        MOD: arr contiene tutti gli elementi senza duplicati all'inizio, preservando l'ordine originale;
+             arr contiene tutti i duplicati in fondo, preservando l'ordine originale;
+    */
+
     int sorted_arr[len];
 
     memcpy(sorted_arr, arr, len * sizeof(int));
@@ -99,7 +130,7 @@ int push_duplicates(int* arr, int len) {
 }
 
 
-// ### Esercizio 3
+// ### Esercizio 3.1
 typedef struct {
     int n;
     int k;
@@ -110,6 +141,12 @@ typedef struct {
 } cBinTree;
 
 void free_tree(cBinTree* tree) {
+    /*
+        REQ: tree non punta a memoria già liberata;
+        ENS: -
+        MOD: libera tutto il sottoalbero radicato in tree;
+    */
+
     if (tree != NULL) {
         free_tree((cBinTree*) tree->sx);
         free_tree((cBinTree*) tree->dx);
@@ -119,6 +156,13 @@ void free_tree(cBinTree* tree) {
 }
 
 cBinTree* cBinInvocation(int n, int k) {
+    /*
+        REQ: n >= k;
+        ENS: ritorna l'albero dei coefficienti binomiali ottenuti dalla formula di Stifel;
+             ritorna NULL in caso di errori di allocazioni;
+        MOD: -
+    */
+
     cBinTree* tree = calloc(1, sizeof(cBinTree));
 
     if (tree == NULL) {
@@ -155,7 +199,18 @@ cBinTree* cBinInvocation(int n, int k) {
     return tree;
 }
 
+
+// ### Esercizio 3.2
 cBinTree*** cBinInvocationSharing(int n, int k) {
+    /*
+        REQ: n >= k;
+        ENS: ritorna una matrice (n + 1) x (k + 1) di alberi di coefficienti binomiali, ottenuti dalla
+             formula di Stifel;
+             non esistono alberi aventi nodi che possano avere stesso valore di n e k;
+             ritorna NULL in caso di errori allocazione;
+        MOD: -
+    */
+
     cBinTree*** T = calloc(n + 1, sizeof(cBinTree**));
 
     for (int y = 0; y < n + 1; y++) {
@@ -184,10 +239,27 @@ cBinTree*** cBinInvocationSharing(int n, int k) {
 }
 
 cBinTree* get_tree(cBinTree*** T, int n, int k) {
+    /*
+        REQ: n >= k;
+             T è la matrice calcolata attraverso cBinInvocationSharing;
+        ENS: ritorna l'albero dei coefficienti binomiali, radicato in (n k),
+             ottenuti dalla formula di Stifel;
+             non esistono nodi aventi stesso valore di n e k;
+             ritorna NULL in caso di errori di allocazione;
+        MOD: -
+    */
+
     return T[n][k];
 }
 
 void free_matrix(cBinTree*** matrix, int n, int k) {
+    /*
+        REQ: matrix ha dimensione (n + 1) x (k + 1);
+             matrix non punta a memoria già liberata;
+        ENS: -
+        MOD: libera matrix;
+    */
+
     for (int y = 0; y < n + 1; y++) {
         for (int x = 0; x < k + 1; x++) {
             free(matrix[y][x]);
@@ -209,6 +281,14 @@ typedef struct {
 } Node;
 
 int append(Node* list, int value) {
+    /*
+        REQ: list non è NULL
+        ENS: se l'allocazione del nuovo nodo è andata a buon fine ritorna 0;
+             se l'allocazione del nuovo nodo non è andata a buon fine ritorna -1;
+        MOD: modifica list->next creando un nuovo Node contenente il valore value;
+             la lista non viene avanzata;
+    */
+
     Node* next = calloc(1, sizeof(Node));
 
     if (next == NULL) {
@@ -223,12 +303,16 @@ int append(Node* list, int value) {
 }
 
 void free_list(Node* list) {
+    /*
+        REQ: list non punta a memoria già liberata;
+        ENS: -
+        MOD: libera tutta la lista avente list in testa;
+    */
+
     Node* curr = (Node*) list;
 
     while (curr != NULL) {
-        // printf("freeing\n");
         Node* next = (Node*) curr->next;
-        // printf("%p %p\n", curr, next);
 
         free(curr);
 
@@ -253,6 +337,12 @@ void free_list(Node* list) {
 }
 
 Pair* eulerSieve(int n) {
+    /*
+        REQ: n >= 0;
+        ENS: ritorna l'array di Pair dal quale è possibile estrapolare i primi;
+        MOD: -
+    */
+
     Pair* succ_prec = calloc(n - 1, sizeof(Pair));
 
     if (succ_prec == NULL) {
@@ -327,6 +417,12 @@ Pair* eulerSieve(int n) {
 }
 
 void printPrimes(Pair* pairs_array, int len) {
+    /*
+        REQ: len è la lunghezza di pairs_array;
+        ENS: -
+        MOD: -
+    */
+
     for (int i = 0; i < len; i++) {
         if (pairs_array[i].fst != 0) {
             printf("%d ", i + 2);
@@ -337,8 +433,14 @@ void printPrimes(Pair* pairs_array, int len) {
 }
 
 
-// Utils
+// ### Utils
 void print_array(int* arr, int len) {
+    /*
+        REQ: len è la lunghezza di arr;
+        ENS: -
+        MOD: -
+    */
+
     for (int i = 0; i < len; i++) {
         printf("%02d ", arr[i]);
     }
@@ -347,12 +449,24 @@ void print_array(int* arr, int len) {
 }
 
 void print_spaces(int amount) {
+    /*
+        REQ: amount >= 0;
+        ENS: -
+        MOD: -
+    */
+
     for (int i = 0; i < amount; i++) {
         printf("  ");
     }
 }
 
 void print_cBinTree_aux(cBinTree* tree, int depth) {
+    /*
+        REQ: depth >= 0;
+        ENS: -
+        MOD: -
+    */
+
     printf("(%d, %d, %d, %p)\n", tree->n, tree->k, tree->res, tree);
 
     if (tree->sx != NULL) {
@@ -369,11 +483,23 @@ void print_cBinTree_aux(cBinTree* tree, int depth) {
 }
 
 void print_cBinTree(cBinTree* tree) {
+    /*
+        REQ: -
+        ENS: -
+        MOD: -
+    */
+
     print_cBinTree_aux(tree, 0);
     printf("\n");
 }
 
 void print_pair_value(int value) {
+    /*
+        REQ: -
+        ENS: -
+        MOD: -
+    */
+
     if (value != 0) {
         printf("%02d ", value);
     } else {
@@ -382,6 +508,12 @@ void print_pair_value(int value) {
 }
 
 void print_pairs_array(Pair* pairs_array, int len) {
+    /*
+        REQ: len è la lunghezza di pairs_array;
+        ENS: -
+        MOD: -
+    */
+
     for (int i = 0; i < len; i++) {
         print_pair_value(pairs_array[i].fst);
     }
@@ -396,6 +528,13 @@ void print_pairs_array(Pair* pairs_array, int len) {
 }
 
 bool check_pairs_array(Pair* pairs_array, int len) {
+    /*
+        REQ: len è la lunghezza di pairs_array;
+        ENS: se in pairs_array non ci sono coppie in cui solo un elemento è 0, ritorna true;
+             se in pairs_array ci sono coppie in cui solo un elemento è 0, ritorna false;
+        MOD: -
+    */
+
     for (int i = 1; i < len; i++) {
         int fst = pairs_array[i].fst;
         int snd = pairs_array[i].snd;
@@ -409,6 +548,13 @@ bool check_pairs_array(Pair* pairs_array, int len) {
 }
 
 bool is_prime(int n) {
+    /*
+        REQ: -
+        ENS: se n è primo ritorna true;
+             se n non è primo ritorna false;
+        MOD: -
+    */
+
     if (n < 2) {
         return false;
     }
@@ -423,6 +569,14 @@ bool is_prime(int n) {
 }
 
 bool check_primes(Pair* pairs_array, int len) {
+    /*
+        REQ: len è la lunghezza di pairs_array
+        ENS: se tutti i numeri considerati primi in pairs_array sono primi, restituisce true;
+             se in pairs_array ci sono numeri considerati primi, non realmente primi,
+             restituisce false (dunque la funzione non garantisce la completezza);
+        MOD: -
+    */
+
     for (int i = 0; i < len; i++) {
         if (pairs_array[i].fst != 0) {
             if (!is_prime(i + 2)) {
@@ -435,6 +589,12 @@ bool check_primes(Pair* pairs_array, int len) {
 }
 
 void print_list(Node* list) {
+    /*
+        REQ: -
+        ENS: -
+        MOD: -
+    */
+
     Node* curr = list;
 
     while (curr != NULL) {
@@ -448,19 +608,23 @@ void print_list(Node* list) {
 
 
 int main() {
+    // ### Esercizio 1
     // endianness();
 
+    // ### Esercizio 2
     // int arr[7] = {5, 4, 5, 3, 5, 2, 3};
     // int rest = push_duplicates(arr, 7);
     // print_array(arr, 7);
     // printf("%d\n", rest);
 
+    // ### Esercizio 3.1
     // cBinTree* tree = cBinInvocation(5, 3);
     // if (tree != NULL) {
     //     print_cBinTree(tree);
     //     free_tree(tree);
     // }
 
+    // ### Esercizio 3.2
     // int n = 5;
     // int k = 3;
     // cBinTree*** matrix = cBinInvocationSharing(n, k);
@@ -470,6 +634,7 @@ int main() {
     //     free_matrix(matrix, n, k);
     // }
 
+    // ### Esercizio 4
     int m = 1000;
     Pair* pairs = eulerSieve(m);
     if (pairs != NULL) {
