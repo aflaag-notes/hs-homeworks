@@ -1,6 +1,6 @@
 # hs-homeworks
 
-Questi sono i miei homework del corso di **Tecniche di Programmazione Funzionale e Imperativa**
+Questi sono i miei homework del corso di **Tecniche di Programmazione Funzionale e Imperativa**.
 
 - [HW1](hw1/HW1-AlessioBandiera.hs)
 - [HW2](hw2/HW2-AlessioBandiera.hs)
